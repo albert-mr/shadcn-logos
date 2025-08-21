@@ -8,7 +8,9 @@
   },
   "main": "./dist/index.js",
   "files": [
-    "dist/**/*"
+    "dist/**/*",
+    "data/**/*",
+    "logos/**/*"
   ],
   "scripts": {
     "build": "tsup",
@@ -36,13 +38,13 @@
   ],
   "author": "shadcn-logos contributors",
   "license": "MIT",
-  "homepage": "https://github.com/shadcn-logos/shadcn-logos#readme",
+  "homepage": "https://github.com/albert-mr/shadcn-logos#readme",
   "repository": {
     "type": "git",
-    "url": "https://github.com/shadcn-logos/shadcn-logos.git"
+    "url": "https://github.com/albert-mr/shadcn-logos.git"
   },
   "bugs": {
-    "url": "https://github.com/shadcn-logos/shadcn-logos/issues"
+    "url": "https://github.com/albert-mr/shadcn-logos/issues"
   },
   "dependencies": {
     "commander": "^12.1.0",
