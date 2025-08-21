@@ -1,5 +1,8 @@
 import type { Logo, Category } from '../types/index.js'
 import { logoCache } from './cache/file-cache.js'
+import { getLocalLogos, searchLocalLogos, getLocalLogosByCategory, localCategories } from '../../data/logos.js'
+import { readFile } from 'fs/promises'
+import { join } from 'path'
 
 const SVGL_API_BASE = 'https://api.svgl.app'
 const CACHE_TTL = 3600000 // 1 hour
@@ -36,11 +39,18 @@ export class SvglApiClient {
     }
 
     try {
-      const url = limit ? `${this.baseURL}?limit=${limit}` : this.baseURL
-      const data = await fetchJson<Logo[]>(url)
+      // Get local logos first
+      const localLogos = getLocalLogos()
       
-      await logoCache.set(cacheKey, data, CACHE_TTL)
-      return data
+      // Get SVGL logos
+      const url = limit ? `${this.baseURL}?limit=${limit}` : this.baseURL
+      const svglLogos = await fetchJson<Logo[]>(url)
+      
+      // Combine both sources (local first)
+      const allLogos = [...localLogos, ...svglLogos]
+      
+      await logoCache.set(cacheKey, allLogos, CACHE_TTL)
+      return allLogos
     } catch (error) {
       throw new Error(`Failed to fetch logos: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
@@ -55,10 +65,17 @@ export class SvglApiClient {
     }
 
     try {
-      const data = await fetchJson<Logo[]>(`${this.baseURL}/category/${encodeURIComponent(category)}`)
+      // Get local logos for this category
+      const localLogos = getLocalLogosByCategory(category)
       
-      await logoCache.set(cacheKey, data, CACHE_TTL)
-      return data
+      // Get SVGL logos for this category
+      const svglLogos = await fetchJson<Logo[]>(`${this.baseURL}/category/${encodeURIComponent(category)}`)
+      
+      // Combine both sources
+      const allLogos = [...localLogos, ...svglLogos]
+      
+      await logoCache.set(cacheKey, allLogos, CACHE_TTL)
+      return allLogos
     } catch (error) {
       throw new Error(`Failed to fetch logos for category "${category}": ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
@@ -66,8 +83,14 @@ export class SvglApiClient {
 
   async searchLogos(query: string): Promise<Logo[]> {
     try {
-      const data = await fetchJson<Logo[]>(`${this.baseURL}?search=${encodeURIComponent(query)}`)
-      return data
+      // Search local logos first
+      const localResults = searchLocalLogos(query)
+      
+      // Search SVGL logos
+      const svglResults = await fetchJson<Logo[]>(`${this.baseURL}?search=${encodeURIComponent(query)}`)
+      
+      // Combine results (local first)
+      return [...localResults, ...svglResults]
     } catch (error) {
       throw new Error(`Failed to search logos for "${query}": ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
@@ -82,10 +105,14 @@ export class SvglApiClient {
     }
 
     try {
-      const data = await fetchJson<Category[]>(`${this.baseURL}/categories`)
+      // Get SVGL categories
+      const svglCategories = await fetchJson<Category[]>(`${this.baseURL}/categories`)
       
-      await logoCache.set(cacheKey, data, CACHE_TTL)
-      return data
+      // Combine with local categories
+      const allCategories = [...localCategories, ...svglCategories]
+      
+      await logoCache.set(cacheKey, allCategories, CACHE_TTL)
+      return allCategories
     } catch (error) {
       throw new Error(`Failed to fetch categories: ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
@@ -93,6 +120,17 @@ export class SvglApiClient {
 
   async getLogoSvg(logoRoute: string): Promise<string> {
     try {
+      // Check if it's a local logo first
+      if (!logoRoute.startsWith('http') && !logoRoute.includes('/')) {
+        try {
+          const localSvgPath = join(process.cwd(), 'logos', `${logoRoute}.svg`)
+          const localSvg = await readFile(localSvgPath, 'utf-8')
+          return localSvg
+        } catch {
+          // Local logo not found, continue to SVGL
+        }
+      }
+      
       let svgUrl: string
       
       if (logoRoute.startsWith('http')) {
