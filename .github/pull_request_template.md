@@ -1,35 +1,26 @@
-## Description
-Brief description of the changes in this PR.
+# Logo Contribution
 
-## Type of Change
-- [ ] 🐛 Bug fix (non-breaking change which fixes an issue)
-- [ ] ✨ New feature (non-breaking change which adds functionality)
-- [ ] 💥 Breaking change (fix or feature that would cause existing functionality to not work as expected)
-- [ ] 📚 Documentation update
-- [ ] 🎨 Code style/formatting changes
-- [ ] ♻️ Refactoring (no functional changes)
-- [ ] ⚡ Performance improvements
-- [ ] 🧪 Test additions or improvements
+<!-- This template is for logo contributions. For code changes, you can delete this and use a regular PR description. -->
 
-## Testing
-- [ ] I have tested these changes locally
-- [ ] I have added/updated tests for new functionality
-- [ ] All existing tests pass (`bun test`)
-- [ ] The build completes successfully (`bun run build`)
+## Logo Details
+
+**Logo Name:** <!-- e.g., "Acme Corp" -->
+**Category:** <!-- Community / Startup / Custom -->
+**Company/Project URL:** <!-- Optional: link to official website -->
 
 ## Checklist
-- [ ] My code follows the project's style guidelines
-- [ ] I have performed a self-review of my code
-- [ ] I have commented my code where necessary
-- [ ] I have updated documentation as needed
-- [ ] My changes generate no new warnings
-- [ ] I have checked that similar changes haven't already been submitted
 
-## Screenshots (if applicable)
-Include screenshots or terminal output demonstrating the changes.
+- [ ] SVG file added to `logos/` directory with correct naming (lowercase, hyphens)
+- [ ] Logo definition added to `data/logos.ts`
+- [ ] SVG is optimized and under 50KB
+- [ ] Logo follows [contribution guidelines](../CONTRIBUTING_LOGOS.md)
+- [ ] I have permission to use this logo
+- [ ] Logo doesn't already exist in SVGL or this repository
 
-## Related Issues
-Closes #(issue number)
+## Additional Information
 
-## Additional Notes
-Any additional information or context that would be helpful for reviewers.
+<!-- Any additional context about the logo, special requirements, or notes for reviewers -->
+
+---
+
+**Note:** This PR will be automatically validated and merged if it passes all checks. See the [Logo Contribution Guide](../CONTRIBUTING_LOGOS.md) for detailed requirements.
