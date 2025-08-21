@@ -1,0 +1,81 @@
+name: Auto Logo Review
+
+on:
+  pull_request:
+    paths:
+      - 'logos/**'
+      - 'data/logos.ts'
+    types: [opened, synchronize]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  validate-logo-pr:
+    runs-on: ubuntu-latest
+    if: github.actor != 'dependabot[bot]'
+    
+    steps:
+      - name: Checkout PR
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get changed files
+        id: changed-files
+        uses: tj-actions/changed-files@v44
+        with:
+          files: |
+            logos/**
+            data/logos.ts
+
+      - name: Validate logo submission
+        id: validate
+        run: |
+          node .github/scripts/validate-logo-pr.js
+        env:
+          CHANGED_FILES: ${{ steps.changed-files.outputs.all_changed_files }}
+          PR_NUMBER: ${{ github.event.number }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Auto-approve and merge if valid
+        if: steps.validate.outputs.valid == 'true'
+        run: |
+          # Approve the PR
+          gh pr review ${{ github.event.number }} --approve --body "✅ Logo validation passed - auto-approving
+
+          **Validation Results:**
+          ${{ steps.validate.outputs.validation_summary }}
+
+          This PR was automatically reviewed and approved by the logo validation system."
+
+          # Enable auto-merge
+          gh pr merge ${{ github.event.number }} --squash --auto
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Comment validation errors
+        if: steps.validate.outputs.valid == 'false'
+        run: |
+          gh pr comment ${{ github.event.number }} --body "❌ Logo validation failed
+
+          **Issues found:**
+          ${{ steps.validate.outputs.validation_errors }}
+
+          Please fix these issues and push a new commit. The PR will be automatically re-validated.
+
+          See [CONTRIBUTING_LOGOS.md](./CONTRIBUTING_LOGOS.md) for detailed guidelines."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

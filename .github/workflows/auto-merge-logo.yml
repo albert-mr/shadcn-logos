@@ -1,0 +1,158 @@
+name: Auto-merge Logo PRs
+
+on:
+  pull_request_review:
+    types: [submitted]
+  check_suite:
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    if: github.event.review.state == 'approved' || github.event.check_suite.conclusion == 'success'
+    
+    steps:
+      - name: Check if PR is logo-related
+        id: check-logo-pr
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { context } = require('@actions/github');
+            
+            let prNumber;
+            if (context.eventName === 'pull_request_review') {
+              prNumber = context.payload.pull_request.number;
+            } else {
+              // For check_suite events, find associated PR
+              const prs = await github.rest.pulls.list({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                head: context.payload.check_suite.head_branch,
+                state: 'open'
+              });
+              
+              if (prs.data.length === 0) {
+                console.log('No open PRs found for this check suite');
+                return { isLogoPR: false };
+              }
+              
+              prNumber = prs.data[0].number;
+            }
+            
+            // Get PR files
+            const files = await github.rest.pulls.listFiles({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
+            
+            // Check if PR only touches logo-related files
+            const logoFiles = files.data.filter(file => 
+              file.filename.startsWith('logos/') || 
+              file.filename === 'data/logos.ts'
+            );
+            
+            const nonLogoFiles = files.data.filter(file => 
+              !file.filename.startsWith('logos/') && 
+              file.filename !== 'data/logos.ts'
+            );
+            
+            const isLogoPR = logoFiles.length > 0 && nonLogoFiles.length === 0;
+            
+            console.log(`PR #${prNumber} - Logo files: ${logoFiles.length}, Non-logo files: ${nonLogoFiles.length}`);
+            console.log(`Is logo PR: ${isLogoPR}`);
+            
+            return {
+              isLogoPR,
+              prNumber,
+              logoFiles: logoFiles.length,
+              nonLogoFiles: nonLogoFiles.length
+            };
+
+      - name: Auto-merge if logo PR passes validation
+        if: fromJSON(steps.check-logo-pr.outputs.result).isLogoPR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { isLogoPR, prNumber } = ${{ steps.check-logo-pr.outputs.result }};
+            
+            if (!isLogoPR) {
+              console.log('Not a logo PR, skipping auto-merge');
+              return;
+            }
+            
+            try {
+              // Get PR details
+              const pr = await github.rest.pulls.get({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+              
+              // Check if PR is approved and checks are passing
+              const reviews = await github.rest.pulls.listReviews({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber
+              });
+              
+              const hasApproval = reviews.data.some(review => review.state === 'APPROVED');
+              
+              if (!hasApproval) {
+                console.log('PR not approved yet, skipping auto-merge');
+                return;
+              }
+              
+              // Check if all checks are passing
+              const checks = await github.rest.checks.listForRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: pr.data.head.sha
+              });
+              
+              const failingChecks = checks.data.check_runs.filter(check => 
+                check.status === 'completed' && check.conclusion !== 'success'
+              );
+              
+              if (failingChecks.length > 0) {
+                console.log(`Found ${failingChecks.length} failing checks, skipping auto-merge`);
+                return;
+              }
+              
+              // Attempt to merge
+              console.log(`Auto-merging logo PR #${prNumber}...`);
+              
+              await github.rest.pulls.merge({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                pull_number: prNumber,
+                merge_method: 'squash',
+                commit_title: `${pr.data.title} (#${prNumber})`,
+                commit_message: `${pr.data.body || ''}\n\n🤖 Auto-merged logo contribution`
+              });
+              
+              console.log(`✅ Successfully auto-merged PR #${prNumber}`);
+              
+              // Add a comment about the auto-merge
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `🎉 This logo contribution was automatically merged!\n\nThank you for contributing to shadcn-logos. Your logo is now available for everyone to use with:\n\n\`\`\`bash\nbunx shadcn-logos@latest add ${pr.data.title.toLowerCase().replace(/[^a-z0-9]/g, '-')}\n\`\`\``
+              });
+              
+            } catch (error) {
+              console.error('Failed to auto-merge:', error);
+              
+              // Comment about the failure
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: prNumber,
+                body: `❌ Auto-merge failed: ${error.message}\n\nA maintainer will need to manually merge this PR.`
+              });
+            }
