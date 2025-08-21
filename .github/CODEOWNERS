@@ -1,0 +1,20 @@
+# Global ownership
+* @maintainers
+
+# Core CLI files require additional review
+/src/cli/ @maintainers
+/src/core/ @maintainers
+/src/types/ @maintainers
+
+# Configuration and build files
+package.json @maintainers
+tsconfig.json @maintainers
+tsup.config.ts @maintainers
+
+# Documentation
+README.md @maintainers
+CONTRIBUTING.md @maintainers
+SECURITY.md @maintainers
+
+# GitHub workflows and templates
+/.github/ @maintainers

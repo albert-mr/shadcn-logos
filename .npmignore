@@ -1,0 +1,52 @@
+# Source files (we only ship dist/)
+src/
+*.ts
+!dist/**/*.d.ts
+
+# Development files
+.github/
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Test files
+test/
+tests/
+*.test.*
+*.spec.*
+coverage/
+
+# Build tools
+tsconfig.json
+tsup.config.ts
+vitest.config.ts
+
+# Development dependencies
+.eslintrc*
+.prettierrc*
+.editorconfig
+
+# Documentation (keep README.md)
+CONTRIBUTING.md
+docs/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Cache and logs
+*.log
+.cache/
+.nyc_output/
+
+# Development configs
+logos.config.json
+src/components/logos/
+
+# Git
+.git/
+.gitignore
+
+# Local environment
+.env*
