@@ -16,8 +16,9 @@
     "build": "tsup",
     "dev": "tsx src/cli/index.ts",
     "type-check": "tsc --noEmit",
-    "lint": "eslint src/**/*.ts",
-    "test": "vitest",
+    "lint": "eslint src test",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "prepublishOnly": "npm run build",
     "postpublish": "echo '🎉 Successfully published shadcn-logos!'",
     "release": "npm version patch && npm publish"
@@ -57,16 +58,18 @@
     "fs-extra": "^11.2.0"
   },
   "devDependencies": {
+    "@eslint/js": "9.33.0",
     "@types/bun": "latest",
+    "@types/cli-progress": "^3.11.6",
     "@types/fs-extra": "^11.0.4",
     "@types/inquirer": "^9.0.7",
-    "@types/cli-progress": "^3.11.6",
+    "@typescript-eslint/eslint-plugin": "^8.8.0",
+    "@typescript-eslint/parser": "^8.8.0",
+    "eslint": "^9.12.0",
     "tsup": "^8.3.0",
     "tsx": "^4.19.1",
-    "vitest": "^2.1.2",
-    "eslint": "^9.12.0",
-    "@typescript-eslint/eslint-plugin": "^8.8.0",
-    "@typescript-eslint/parser": "^8.8.0"
+    "typescript-eslint": "^8.61.0",
+    "vitest": "^2.1.2"
   },
   "peerDependencies": {
     "typescript": "^5"

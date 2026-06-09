@@ -1,22 +1,56 @@
 import type { Logo, Category } from '../types/index.js'
 import { logoCache } from './cache/file-cache.js'
 import { getLocalLogos, searchLocalLogos, getLocalLogosByCategory, localCategories } from '../../data/logos.js'
+import type { LocalLogo } from '../../data/logos.js'
+import { findLogosInList } from './logo-match.js'
 import { readFile } from 'fs/promises'
-import { join } from 'path'
+import { dirname, join } from 'path'
+import { fileURLToPath } from 'url'
 
 const SVGL_API_BASE = 'https://api.svgl.app'
 const CACHE_TTL = 3600000 // 1 hour
+const FETCH_TIMEOUT_MS = 15000
+
+const MODULE_DIR = dirname(fileURLToPath(import.meta.url))
+
+/** Local logos use a string id and may omit a url; normalize to the Logo shape
+ *  so they combine cleanly with SVGL results. (id is unused for name matching.) */
+function normalizeLocalLogo(local: LocalLogo): Logo {
+  return {
+    id: 0,
+    title: local.title,
+    category: local.category,
+    route: local.route,
+    url: local.url ?? '',
+    wordmark: local.wordmark,
+  }
+}
+
+async function fetchWithTimeout(url: string): Promise<Response> {
+  const controller = new AbortController()
+  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+  try {
+    return await fetch(url, { signal: controller.signal })
+  } catch (error) {
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new Error(`Request timed out after ${FETCH_TIMEOUT_MS / 1000}s: ${url}`)
+    }
+    throw error
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetch(url)
+  const response = await fetchWithTimeout(url)
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`)
   }
-  return response.json()
+  return response.json() as Promise<T>
 }
 
 async function fetchText(url: string): Promise<string> {
-  const response = await fetch(url)
+  const response = await fetchWithTimeout(url)
   if (!response.ok) {
     throw new Error(`HTTP ${response.status}: ${response.statusText}`)
   }
@@ -40,8 +74,8 @@ export class SvglApiClient {
 
     try {
       // Get local logos first
-      const localLogos = getLocalLogos()
-      
+      const localLogos = getLocalLogos().map(normalizeLocalLogo)
+
       // Get SVGL logos
       const url = limit ? `${this.baseURL}?limit=${limit}` : this.baseURL
       const svglLogos = await fetchJson<Logo[]>(url)
@@ -66,7 +100,7 @@ export class SvglApiClient {
 
     try {
       // Get local logos for this category
-      const localLogos = getLocalLogosByCategory(category)
+      const localLogos = getLocalLogosByCategory(category).map(normalizeLocalLogo)
       
       // Get SVGL logos for this category
       const svglLogos = await fetchJson<Logo[]>(`${this.baseURL}/category/${encodeURIComponent(category)}`)
@@ -84,7 +118,7 @@ export class SvglApiClient {
   async searchLogos(query: string): Promise<Logo[]> {
     try {
       // Search local logos first
-      const localResults = searchLocalLogos(query)
+      const localResults = searchLocalLogos(query).map(normalizeLocalLogo)
       
       // Search SVGL logos
       const svglResults = await fetchJson<Logo[]>(`${this.baseURL}?search=${encodeURIComponent(query)}`)
@@ -120,62 +154,45 @@ export class SvglApiClient {
 
   async getLogoSvg(logoRoute: string): Promise<string> {
     try {
-      // Check if it's a local logo first
+      // Bundled/local logo: try known on-disk locations before the network.
       if (!logoRoute.startsWith('http') && !logoRoute.includes('/')) {
-        try {
-          const localSvgPath = join(process.cwd(), 'logos', `${logoRoute}.svg`)
-          const localSvg = await readFile(localSvgPath, 'utf-8')
-          return localSvg
-        } catch {
-          // Local logo not found, continue to SVGL
-        }
+        const local = await this.readLocalLogo(logoRoute)
+        if (local !== null) return local
       }
-      
-      let svgUrl: string
-      
-      if (logoRoute.startsWith('http')) {
-        svgUrl = logoRoute
-      } else {
-        svgUrl = `${this.baseURL}/svg/${logoRoute}.svg`
-      }
-      
-      const data = await fetchText(svgUrl)
-      return data
+
+      const svgUrl = logoRoute.startsWith('http') ? logoRoute : `${this.baseURL}/svg/${logoRoute}.svg`
+      return await fetchText(svgUrl)
     } catch (error) {
       throw new Error(`Failed to fetch SVG for "${logoRoute}": ${error instanceof Error ? error.message : 'Unknown error'}`)
     }
   }
 
-  async findLogos(names: string[]): Promise<{ found: Logo[]; notFound: string[] }> {
-    const allLogos = await this.getAllLogos()
-    const found: Logo[] = []
-    const notFound: string[] = []
-
-    for (const name of names) {
-      const nameLower = name.toLowerCase()
-      
-      const exactMatch = allLogos.find(logo => 
-        logo.title.toLowerCase() === nameLower
-      )
-      
-      const cleanMatch = !exactMatch ? allLogos.find(logo => 
-        logo.title.toLowerCase().replace(/[^a-z0-9]/g, '') === nameLower.replace(/[^a-z0-9]/g, '')
-      ) : null
-      
-      const partialMatch = !exactMatch && !cleanMatch ? allLogos.find(logo => 
-        logo.title.toLowerCase().includes(nameLower)
-      ) : null
-      
-      const logo = exactMatch || cleanMatch || partialMatch
-      
-      if (logo) {
-        found.push(logo)
-      } else {
-        notFound.push(name)
+  /**
+   * Read a bundled logo SVG from any location it may live at: the user's repo
+   * (`./logos`), the bundled package (`dist/../logos`), or the dev tree
+   * (`src/core/../../logos`). Returns null if not found locally so the caller
+   * falls through to the network. The previous version only looked in
+   * `process.cwd()/logos`, so bundled logos were unreachable for end users.
+   */
+  private async readLocalLogo(name: string): Promise<string | null> {
+    const candidates = [
+      join(process.cwd(), 'logos', `${name}.svg`),
+      join(MODULE_DIR, '..', 'logos', `${name}.svg`),
+      join(MODULE_DIR, '..', '..', 'logos', `${name}.svg`),
+    ]
+    for (const path of candidates) {
+      try {
+        return await readFile(path, 'utf-8')
+      } catch {
+        // not here — try the next candidate
       }
     }
+    return null
+  }
 
-    return { found, notFound }
+  async findLogos(names: string[]): Promise<{ found: Logo[]; notFound: string[] }> {
+    const allLogos = await this.getAllLogos()
+    return findLogosInList(allLogos, names)
   }
 }
 

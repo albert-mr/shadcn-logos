@@ -2,6 +2,7 @@ import ora from 'ora'
 import { logger } from '../utils/logger.js'
 import { loadConfig } from '../utils/config.js'
 import { LogoInstaller } from '../../core/installer.js'
+import { toComponentName, sanitizeFileName } from '../../core/naming.js'
 import { EnhancedErrorHandler, ExitCode } from '../utils/error-handler.js'
 import type { InstallOptions } from '../../types/index.js'
 
@@ -40,26 +41,32 @@ export async function addCommand(logos: string[], options: Partial<InstallOption
   }).start()
 
   try {
-    await installer.install(installOptions)
-    
+    const installed = await installer.install(installOptions)
+
     if (installOptions.dryRun) {
       spinner.succeed('Dry run completed successfully')
     } else {
-      spinner.succeed(`Successfully installed ${logos.length} logo${logos.length === 1 ? '' : 's'}`)
-      
+      spinner.succeed(`Successfully installed ${installed.length} logo${installed.length === 1 ? '' : 's'}`)
+
       if (!installOptions.silent) {
         logger.info('Installed logos:')
-        for (const logo of logos) {
-          logger.dim(`  ✓ ${logo}`)
+        for (const logo of installed) {
+          logger.dim(`  ✓ ${logo.title}`)
         }
-        
-        logger.dim('\nUsage examples:')
-        if (config.framework === 'react') {
-          const exampleName = logos[0]?.charAt(0).toUpperCase() + logos[0]?.slice(1) + 'Logo'
-          logger.highlight(`  import { ${exampleName} } from '${config.outputDir}/${logos[0]}'`)
-          logger.highlight(`  <${exampleName} size={32} />`)
-        } else if (config.format === 'svg') {
-          logger.highlight(`  Check your logos in: ${config.outputDir}`)
+
+        const first = installed[0]
+        if (first) {
+          logger.dim('\nUsage examples:')
+          if (config.format !== 'svg' && (config.framework === 'react' || config.framework === 'vue' || config.framework === 'svelte')) {
+            const name = toComponentName(first.title)
+            const file = sanitizeFileName(first.title)
+            logger.highlight(`  import { ${name} } from '${config.outputDir}/${file}'`)
+            if (config.framework === 'react') {
+              logger.highlight(`  <${name} size={32} />`)
+            }
+          } else {
+            logger.highlight(`  Check your logos in: ${config.outputDir}`)
+          }
         }
       }
     }

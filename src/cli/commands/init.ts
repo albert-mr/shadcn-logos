@@ -1,6 +1,6 @@
 import inquirer from 'inquirer'
 import { logger } from '../utils/logger.js'
-import { EnhancedErrorHandler, ExitCode } from '../utils/error-handler.js'
+import { EnhancedErrorHandler } from '../utils/error-handler.js'
 import { 
   configExists, 
   saveConfig, 

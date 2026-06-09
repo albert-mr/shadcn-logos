@@ -9,7 +9,7 @@ export class EnhancedErrorHandler {
     for (const missing of notFound) {
       const suggestions = this.findSimilar(missing, allLogos)
       if (suggestions.length > 0) {
-        logger.log(pc.yellow('  Did you mean?'), suggestions.slice(0, 3).map(s => pc.cyan(s)).join(', '))
+        logger.log(`${pc.yellow('  Did you mean?')} ${suggestions.slice(0, 3).map(s => pc.cyan(s)).join(', ')}`)
       }
     }
     
@@ -85,33 +85,27 @@ export class EnhancedErrorHandler {
   }
 
   private static levenshteinDistance(str1: string, str2: string): number {
-    const matrix: number[][] = []
     const len1 = str1.length
     const len2 = str2.length
 
-    for (let i = 0; i <= len2; i++) {
-      matrix[i] = [i]
-    }
-
-    for (let j = 0; j <= len1; j++) {
-      matrix[0][j] = j
-    }
+    // (len2 + 1) × (len1 + 1) matrix, seeded with the edit-distance base row/column.
+    const matrix: number[][] = Array.from({ length: len2 + 1 }, (_, i) =>
+      Array.from({ length: len1 + 1 }, (_, j) => (i === 0 ? j : j === 0 ? i : 0)),
+    )
 
     for (let i = 1; i <= len2; i++) {
+      const row = matrix[i]!
+      const prevRow = matrix[i - 1]!
       for (let j = 1; j <= len1; j++) {
         if (str2.charAt(i - 1) === str1.charAt(j - 1)) {
-          matrix[i][j] = matrix[i - 1][j - 1]
+          row[j] = prevRow[j - 1]!
         } else {
-          matrix[i][j] = Math.min(
-            matrix[i - 1][j - 1] + 1,
-            matrix[i][j - 1] + 1,
-            matrix[i - 1][j] + 1
-          )
+          row[j] = Math.min(prevRow[j - 1]! + 1, row[j - 1]! + 1, prevRow[j]! + 1)
         }
       }
     }
 
-    return matrix[len2][len1]
+    return matrix[len2]![len1]!
   }
 }
 

@@ -1,7 +1,6 @@
 import { existsSync, readFileSync, writeFileSync, mkdirSync, rmSync, readdirSync } from 'fs'
 import { join } from 'path'
 import { homedir } from 'os'
-import type { Logo, Category } from '../../types/index.js'
 
 interface CacheEntry<T> {
   data: T
@@ -52,7 +51,7 @@ export class FileCache {
       }
       
       return entry.data
-    } catch (error) {
+    } catch {
       this.delete(key)
       return null
     }
