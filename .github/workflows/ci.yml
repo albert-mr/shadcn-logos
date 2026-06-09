@@ -28,8 +28,11 @@ jobs:
       
     - name: Build
       run: bun run build
-      
-    - name: Test CLI
+
+    - name: Run tests
+      run: bun run test
+
+    - name: Smoke-test CLI
       run: |
         bun run dev --help
         bun run dev --version

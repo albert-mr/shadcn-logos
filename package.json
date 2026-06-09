@@ -1,7 +1,37 @@
 {
   "name": "shadcn-logos",
   "version": "0.2.0",
-  "description": "A CLI tool for adding company logos to your projects",
+  "description": "Copy brand logo components into your project, like shadcn/ui but for logos. React, Vue, Svelte, and optimized SVG.",
+  "keywords": [
+    "cli",
+    "logos",
+    "logo",
+    "svg",
+    "svgl",
+    "shadcn",
+    "icons",
+    "brand-logos",
+    "react",
+    "vue",
+    "svelte",
+    "typescript",
+    "components",
+    "copy-paste",
+    "developer-tools",
+    "frontend",
+    "ui",
+    "design-system"
+  ],
+  "homepage": "https://github.com/albert-mr/shadcn-logos#readme",
+  "bugs": {
+    "url": "https://github.com/albert-mr/shadcn-logos/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/albert-mr/shadcn-logos.git"
+  },
+  "license": "MIT",
+  "author": "shadcn-logos contributors",
   "type": "module",
   "bin": {
     "shadcn-logos": "./dist/index.js"
@@ -10,8 +40,13 @@
   "files": [
     "dist/**/*",
     "data/**/*",
-    "logos/**/*"
+    "logos/**/*",
+    "README.md",
+    "LICENSE"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "scripts": {
     "build": "tsup",
     "dev": "tsx src/cli/index.ts",
@@ -19,43 +54,20 @@
     "lint": "eslint src test",
     "test": "vitest run",
     "test:watch": "vitest",
+    "check": "bun run lint && bun run type-check && bun run test && bun run build",
     "prepublishOnly": "npm run build",
     "postpublish": "echo '🎉 Successfully published shadcn-logos!'",
     "release": "npm version patch && npm publish"
   },
-  "keywords": [
-    "cli",
-    "logos",
-    "svg",
-    "shadcn",
-    "icons",
-    "react",
-    "vue",
-    "svelte",
-    "components",
-    "developer-tools",
-    "frontend",
-    "ui"
-  ],
-  "author": "shadcn-logos contributors",
-  "license": "MIT",
-  "homepage": "https://github.com/albert-mr/shadcn-logos#readme",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/albert-mr/shadcn-logos.git"
-  },
-  "bugs": {
-    "url": "https://github.com/albert-mr/shadcn-logos/issues"
-  },
   "dependencies": {
-    "commander": "^12.1.0",
-    "picocolors": "^1.1.1",
-    "ora": "^8.1.0",
     "cli-progress": "^3.12.0",
+    "commander": "^12.1.0",
+    "fs-extra": "^11.2.0",
     "inquirer": "^12.0.0",
-    "zod": "^3.23.8",
+    "ora": "^8.1.0",
+    "picocolors": "^1.1.1",
     "svgo": "^3.3.2",
-    "fs-extra": "^11.2.0"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@eslint/js": "9.33.0",
@@ -73,8 +85,5 @@
   },
   "peerDependencies": {
     "typescript": "^5"
-  },
-  "engines": {
-    "node": ">=18"
   }
 }
