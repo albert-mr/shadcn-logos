@@ -90,7 +90,8 @@ export async function listCommand(options: ListOptions) {
 
 function groupLogosByCategory(logos: Logo[]): Record<string, Logo[]> {
   return logos.reduce((groups, logo) => {
-    const category = logo.category
+    // A logo's category may be a single string or an array; group by the first.
+    const category = Array.isArray(logo.category) ? (logo.category[0] ?? 'Other') : logo.category
     if (!groups[category]) {
       groups[category] = []
     }

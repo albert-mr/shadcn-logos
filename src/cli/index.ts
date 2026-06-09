@@ -1,5 +1,5 @@
-#!/usr/bin/env node
-
+// The executable shebang is added by tsup (see banner in tsup.config.ts); keeping
+// one here too would emit a duplicate `#!` on line 2 of the bundle and crash node.
 import { Command } from 'commander'
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
@@ -16,20 +16,26 @@ const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 
 function getPackageInfo() {
-  try {
-    const packageJsonPath = join(__dirname, '../../package.json')
-    const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8'))
-    return {
-      name: packageJson.name,
-      version: packageJson.version,
-      description: packageJson.description
+  // package.json sits one level up from the bundled dist/ but two levels up from
+  // the dev tree (src/cli/). Try both so `--version` is correct either way.
+  for (const rel of ['../package.json', '../../package.json']) {
+    try {
+      const packageJson = JSON.parse(readFileSync(join(__dirname, rel), 'utf8'))
+      if (packageJson?.name) {
+        return {
+          name: packageJson.name,
+          version: packageJson.version,
+          description: packageJson.description,
+        }
+      }
+    } catch {
+      // try the next candidate
     }
-  } catch {
-    return {
-      name: 'shadcn-logos',
-      version: '0.1.0',
-      description: 'A CLI tool for adding company logos to your projects'
-    }
+  }
+  return {
+    name: 'shadcn-logos',
+    version: '0.0.0',
+    description: 'A CLI tool for adding company logos to your projects',
   }
 }
 

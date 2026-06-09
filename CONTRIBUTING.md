@@ -8,7 +8,7 @@ Thank you for your interest in contributing to shadcn-logos! This document provi
 2. Clone your fork: `git clone https://github.com/YOUR_USERNAME/shadcn-logos.git`
 3. Install dependencies: `bun install`
 4. Make your changes
-5. Test your changes: `bun run build && bun run dev --help`
+5. Verify your changes: `bun run check` (lint, type-check, test, build)
 6. Submit a pull request
 
 ## 📋 Development Setup
@@ -25,11 +25,18 @@ bun install
 # Run in development mode
 bun run dev --help
 
+# Run the test suite
+bun run test
+
+# Lint and type-check
+bun run lint
+bun run type-check
+
 # Build the project
 bun run build
 
-# Run type checking
-bun run type-check
+# Run everything CI runs, in one command
+bun run check
 ```
 
 ## 🎯 What We're Looking For

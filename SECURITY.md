@@ -2,23 +2,28 @@
 
 ## Supported Versions
 
-We currently support the following versions with security updates:
+The latest published version receives security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.1.x   | :white_check_mark: |
+| 0.2.x   | :white_check_mark: |
+| < 0.2   | :x:                |
 
 ## Reporting a Vulnerability
 
-If you discover a security vulnerability within shadcn-logos, please follow these steps:
+Please **do not open a public issue** for security vulnerabilities.
 
-1. **Do NOT open a public issue** for security vulnerabilities
-2. Send an email to the maintainers describing the issue
-3. Include as much detail as possible:
-   - Description of the vulnerability
-   - Steps to reproduce
-   - Potential impact
-   - Suggested fix (if you have one)
+Report privately through GitHub's
+[private vulnerability reporting](https://github.com/albert-mr/shadcn-logos/security/advisories/new):
+open the repository's **Security** tab and choose **Report a vulnerability**. We aim to
+acknowledge reports within a few days.
+
+Include as much detail as you can:
+
+- Description of the vulnerability
+- Steps to reproduce
+- Potential impact
+- Suggested fix, if you have one
 
 ## Security Considerations
 
