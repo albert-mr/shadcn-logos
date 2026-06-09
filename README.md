@@ -49,6 +49,17 @@ export function VercelLogo(props) {
 
 That's it! The logo is now **yours** to customize. ✨
 
+## Documentation
+
+Full documentation lives in [`docs/`](./docs/):
+
+- [Getting started](./docs/getting-started.md) — install, configure, add your first logo, and use it.
+- [Commands](./docs/commands.md) — every command, flag, and exit code.
+- [Configuration](./docs/configuration.md) — the `logos.config.json` file, field by field.
+- [Frameworks and output](./docs/frameworks.md) — React, Vue, Svelte, and raw SVG, plus how the `size` prop and `currentColor` work.
+- [Troubleshooting](./docs/troubleshooting.md) — common errors and how to fix them.
+- [Architecture](./docs/architecture.md) — how the CLI works, for contributors.
+
 ## Installation
 
 **No installation needed** - use with `bunx`:
