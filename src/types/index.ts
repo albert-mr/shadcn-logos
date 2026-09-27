@@ -39,7 +39,7 @@ export const configSchema = z.object({
     colorMode: z.enum(['currentColor', 'original']),
     cssVariables: z.boolean()
   }),
-  aliases: z.record(z.string()).optional(),
+  aliases: z.record(z.string(), z.string()).optional(),
   registry: z.object({
     source: z.literal('svgl'),
     cache: z.boolean()

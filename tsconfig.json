@@ -15,12 +15,6 @@
     "noEmit": true,
     "resolveJsonModule": true,
 
-    // Path mapping
-    "baseUrl": ".",
-    "paths": {
-      "@/*": ["./src/*"]
-    },
-
     // Best practices
     "strict": true,
     "skipLibCheck": true,
