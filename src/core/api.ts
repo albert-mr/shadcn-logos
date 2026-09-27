@@ -33,7 +33,7 @@ async function fetchWithTimeout(url: string): Promise<Response> {
     return await fetch(url, { signal: controller.signal })
   } catch (error) {
     if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error(`Request timed out after ${FETCH_TIMEOUT_MS / 1000}s: ${url}`)
+      throw new Error(`Request timed out after ${FETCH_TIMEOUT_MS / 1000}s: ${url}`, { cause: error })
     }
     throw error
   } finally {
@@ -64,8 +64,8 @@ export class SvglApiClient {
     this.baseURL = baseURL
   }
 
-  async getAllLogos(limit?: number): Promise<Logo[]> {
-    const cacheKey = `all-logos${limit ? `-${limit}` : ''}`
+  async getAllLogos(): Promise<Logo[]> {
+    const cacheKey = 'all-logos'
     
     const cached = await logoCache.get<Logo[]>(cacheKey)
     if (cached) {
@@ -77,8 +77,7 @@ export class SvglApiClient {
       const localLogos = getLocalLogos().map(normalizeLocalLogo)
 
       // Get SVGL logos
-      const url = limit ? `${this.baseURL}?limit=${limit}` : this.baseURL
-      const svglLogos = await fetchJson<Logo[]>(url)
+      const svglLogos = await fetchJson<Logo[]>(this.baseURL)
       
       // Combine both sources (local first)
       const allLogos = [...localLogos, ...svglLogos]
@@ -86,7 +85,7 @@ export class SvglApiClient {
       await logoCache.set(cacheKey, allLogos, CACHE_TTL)
       return allLogos
     } catch (error) {
-      throw new Error(`Failed to fetch logos: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(`Failed to fetch logos: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error })
     }
   }
 
@@ -111,7 +110,7 @@ export class SvglApiClient {
       await logoCache.set(cacheKey, allLogos, CACHE_TTL)
       return allLogos
     } catch (error) {
-      throw new Error(`Failed to fetch logos for category "${category}": ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(`Failed to fetch logos for category "${category}": ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error })
     }
   }
 
@@ -126,7 +125,7 @@ export class SvglApiClient {
       // Combine results (local first)
       return [...localResults, ...svglResults]
     } catch (error) {
-      throw new Error(`Failed to search logos for "${query}": ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(`Failed to search logos for "${query}": ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error })
     }
   }
 
@@ -148,7 +147,7 @@ export class SvglApiClient {
       await logoCache.set(cacheKey, allCategories, CACHE_TTL)
       return allCategories
     } catch (error) {
-      throw new Error(`Failed to fetch categories: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(`Failed to fetch categories: ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error })
     }
   }
 
@@ -163,7 +162,7 @@ export class SvglApiClient {
       const svgUrl = logoRoute.startsWith('http') ? logoRoute : `${this.baseURL}/svg/${logoRoute}.svg`
       return await fetchText(svgUrl)
     } catch (error) {
-      throw new Error(`Failed to fetch SVG for "${logoRoute}": ${error instanceof Error ? error.message : 'Unknown error'}`)
+      throw new Error(`Failed to fetch SVG for "${logoRoute}": ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error })
     }
   }
 
