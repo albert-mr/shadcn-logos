@@ -4,7 +4,7 @@ This walks you from nothing to a logo rendering in your app in about a minute.
 
 ## Requirements
 
-- Node.js 18 or newer.
+- Node.js 20 or newer.
 - Any project (React, Vue, Svelte, or plain HTML). No framework is required for raw SVG output.
 
 ## 1. Run it (no install needed)
