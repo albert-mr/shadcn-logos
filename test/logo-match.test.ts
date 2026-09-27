@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { matchLogo, findLogosInList, resolveVariant } from '../src/core/logo-match.js'
+import { matchLogo, findLogosInList, resolveVariant, filterByCategory } from '../src/core/logo-match.js'
 import type { Logo } from '../src/types/index.js'
 
 const L = (title: string): Logo => ({ id: 1, title, category: 'x', route: title.toLowerCase(), url: 'u' })
@@ -61,5 +61,16 @@ describe('resolveVariant', () => {
 
   it('returns null when a wordmark is requested but missing', () => {
     expect(resolveVariant(plain, { wordmark: true })).toBeNull()
+  })
+})
+
+describe('filterByCategory', () => {
+  it('matches case-insensitively and across multi-category logos', () => {
+    const logos: Logo[] = [
+      { id: 1, title: 'LangChain', category: ['AI', 'Framework'], route: 'l', url: '' },
+      { id: 2, title: 'Granola', category: 'AI', route: 'g', url: '' },
+      { id: 3, title: 'Vue', category: 'Framework', route: 'v', url: '' },
+    ]
+    expect(filterByCategory(logos, 'ai').map((l) => l.title)).toEqual(['LangChain', 'Granola'])
   })
 })

@@ -1,8 +1,8 @@
 import type { Logo, Category } from '../types/index.js'
 import { logoCache } from './cache/file-cache.js'
-import { getLocalLogos, searchLocalLogos, getLocalLogosByCategory, localCategories } from '../../data/logos.js'
+import { getLocalLogos, searchLocalLogos, localCategories } from '../../data/logos.js'
 import type { LocalLogo } from '../../data/logos.js'
-import { findLogosInList } from './logo-match.js'
+import { findLogosInList, filterByCategory } from './logo-match.js'
 import { readFile } from 'fs/promises'
 import { dirname, join } from 'path'
 import { fileURLToPath } from 'url'
@@ -89,29 +89,10 @@ export class SvglApiClient {
     }
   }
 
+  /** SVGL's /category endpoint is case-sensitive ("ai" 404s), so filter the
+   *  cached full list instead. */
   async getLogosByCategory(category: string): Promise<Logo[]> {
-    const cacheKey = `category-${category}`
-    
-    const cached = await logoCache.get<Logo[]>(cacheKey)
-    if (cached) {
-      return cached
-    }
-
-    try {
-      // Get local logos for this category
-      const localLogos = getLocalLogosByCategory(category).map(normalizeLocalLogo)
-      
-      // Get SVGL logos for this category
-      const svglLogos = await fetchJson<Logo[]>(`${this.baseURL}/category/${encodeURIComponent(category)}`)
-      
-      // Combine both sources
-      const allLogos = [...localLogos, ...svglLogos]
-      
-      await logoCache.set(cacheKey, allLogos, CACHE_TTL)
-      return allLogos
-    } catch (error) {
-      throw new Error(`Failed to fetch logos for category "${category}": ${error instanceof Error ? error.message : 'Unknown error'}`, { cause: error })
-    }
+    return filterByCategory(await this.getAllLogos(), category)
   }
 
   async searchLogos(query: string): Promise<Logo[]> {

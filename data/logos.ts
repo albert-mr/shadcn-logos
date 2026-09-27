@@ -53,13 +53,6 @@ export function getLocalLogoById(id: string): LocalLogo | undefined {
 }
 
 /**
- * Get local logos by category
- */
-export function getLocalLogosByCategory(category: string): LocalLogo[] {
-  return localLogos.filter(logo => logo.category === category)
-}
-
-/**
  * Search local logos
  */
 export function searchLocalLogos(query: string): LocalLogo[] {
