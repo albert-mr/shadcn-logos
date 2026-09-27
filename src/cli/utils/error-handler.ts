@@ -67,7 +67,7 @@ export class EnhancedErrorHandler {
     
     logger.dim('\n  Get help:')
     logger.highlight('    shadcn-logos --help')
-    logger.highlight('    Report issue: https://github.com/yourusername/shadcn-logos/issues')
+    logger.highlight('    Report issue: https://github.com/albert-mr/shadcn-logos/issues')
     
     return { code: 1, error }
   }

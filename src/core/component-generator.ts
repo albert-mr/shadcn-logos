@@ -7,7 +7,7 @@
  */
 import type { Config, Logo } from '../types/index.js'
 import { optimizeSvg } from './svg.js'
-import { toComponentName } from './naming.js'
+import { toComponentName, sanitizeFileName } from './naming.js'
 
 /**
  * Inject attributes into the root `<svg>` tag, first stripping any baked-in
@@ -55,24 +55,34 @@ export function reactifyAttrs(svg: string): string {
   return out
 }
 
-export function generateComponent(config: Config, logo: Logo, rawSvg: string): string {
-  const svg = optimizeSvg(rawSvg, { colorMode: config.style.colorMode })
+/**
+ * `wordmark`: size drives height only; width follows the viewBox aspect ratio.
+ * A 5:1 wordmark forced into a size x size square would render tiny.
+ */
+export function generateComponent(
+  config: Config,
+  logo: Logo,
+  rawSvg: string,
+  opts: { wordmark?: boolean } = {},
+): string {
+  const svg = optimizeSvg(rawSvg, { colorMode: config.style.colorMode, idPrefix: sanitizeFileName(logo.title) })
   const name = toComponentName(logo.title)
+  const dims = opts.wordmark ? ['height'] : ['width', 'height']
 
   switch (config.framework) {
     case 'react':
-      return reactComponent(name, svg, config)
+      return reactComponent(name, svg, config, dims)
     case 'vue':
-      return vueComponent(name, svg, config)
+      return vueComponent(name, svg, config, dims)
     case 'svelte':
-      return svelteComponent(name, svg, config)
+      return svelteComponent(name, svg, config, dims)
     default:
       return svg
   }
 }
 
-function reactComponent(name: string, svg: string, config: Config): string {
-  const body = applySvgProps(reactifyAttrs(svg), 'width={size} height={size} {...otherProps}')
+function reactComponent(name: string, svg: string, config: Config, dims: string[]): string {
+  const body = applySvgProps(reactifyAttrs(svg), `${dims.map((d) => `${d}={size}`).join(' ')} {...otherProps}`)
   const iface = config.typescript
     ? `\ninterface ${name}Props extends React.SVGProps<SVGSVGElement> {\n  size?: string | number\n}\n`
     : ''
@@ -92,8 +102,8 @@ export default ${name}
 `
 }
 
-function vueComponent(name: string, svg: string, config: Config): string {
-  const body = applySvgProps(svg, ':width="size" :height="size" v-bind="$attrs"')
+function vueComponent(name: string, svg: string, config: Config, dims: string[]): string {
+  const body = applySvgProps(svg, `${dims.map((d) => `:${d}="size"`).join(' ')} v-bind="$attrs"`)
   const scriptLang = config.typescript ? ' lang="ts"' : ''
 
   return `<template>
@@ -117,8 +127,8 @@ export default defineComponent({
 `
 }
 
-function svelteComponent(name: string, svg: string, config: Config): string {
-  const body = applySvgProps(svg, 'width={size} height={size} {...$$restProps}')
+function svelteComponent(name: string, svg: string, config: Config, dims: string[]): string {
+  const body = applySvgProps(svg, `${dims.map((d) => `${d}={size}`).join(' ')} {...$$restProps}`)
   const scriptLang = config.typescript ? ' lang="ts"' : ''
 
   return `<script${scriptLang}>

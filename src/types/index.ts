@@ -50,7 +50,9 @@ export const installOptionsSchema = z.object({
   logos: z.array(z.string()),
   force: z.boolean().optional(),
   dryRun: z.boolean().optional(),
-  silent: z.boolean().optional()
+  silent: z.boolean().optional(),
+  dark: z.boolean().optional(),
+  wordmark: z.boolean().optional()
 })
 
 export const searchResultSchema = z.object({

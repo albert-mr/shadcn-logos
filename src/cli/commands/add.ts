@@ -28,7 +28,9 @@ export async function addCommand(logos: string[], options: Partial<InstallOption
     logos,
     force: options.force || false,
     dryRun: options.dryRun || false,
-    silent: options.silent || false
+    silent: options.silent || false,
+    dark: options.dark || false,
+    wordmark: options.wordmark || false
   }
 
   if (installOptions.dryRun) {
