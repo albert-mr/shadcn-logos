@@ -1,6 +1,10 @@
 # Contributing Logos
 
-We welcome contributions of new logos to the shadcn-logos repository! This allows for faster logo additions without waiting for SVGL to merge new logos.
+Most logos come from [SVGL](https://svgl.app). **If the logo belongs in SVGL, submit it there**
+(see "Contributing" in the [SVGL README](https://github.com/pheralb/svgl#readme)): it reaches every SVGL
+user and shows up here automatically, with light/dark and wordmark variants.
+
+Bundle a logo in this repo only when SVGL won't take it or you need it sooner.
 
 ## How to Add a Logo
 
@@ -39,17 +43,7 @@ export const localLogos: LocalLogo[] = [
 ]
 ```
 
-### 4. Update Category Count
-
-If adding to a new category, update the count in `localCategories`:
-
-```typescript
-export const localCategories: LocalCategory[] = [
-  { category: 'Community', total: 5 }, // ← update this number
-  { category: 'Startup', total: 3 },
-  { category: 'Custom', total: 1 }
-]
-```
+Category counts are derived from `localLogos`, so there is nothing else to update.
 
 ## Categories
 
