@@ -26,7 +26,8 @@ export async function listCommand(options: ListOptions) {
       spinner.succeed(`Found ${logos.length} logos in category "${options.category}"`)
     } else {
       [logos, categories] = await Promise.all([
-        svglApi.getAllLogos(limit),
+        // Fetch everything (cached) so the "of N" total is real; slice for display below.
+        svglApi.getAllLogos(),
         svglApi.getCategories()
       ])
       spinner.succeed(`Showing ${Math.min(logos.length, limit)} of ${logos.length} available logos`)

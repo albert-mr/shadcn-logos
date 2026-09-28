@@ -42,11 +42,19 @@ export type ColorMode = 'currentColor' | 'original'
  * `fill="none"` / `stroke="none"` are preserved (turning them into `currentColor`
  * would paint shapes that are meant to be unpainted).
  *
+ * `idPrefix` namespaces ids (and their `url(#…)` references) so logos inlined
+ * side by side don't collide.
+ *
  * Never throws: on any svgo failure it returns the input unchanged.
  */
-export function optimizeSvg(svgContent: string, opts: { colorMode: ColorMode }): string {
+export function optimizeSvg(svgContent: string, opts: { colorMode: ColorMode; idPrefix?: string }): string {
   try {
-    const result = optimize(svgContent, { plugins: SVGO_PLUGINS })
+    // cleanupIds minifies ids to `a`, `b`, ... so two inlined logos on one page
+    // would share `#a` and clip/mask each other. Prefix them per logo.
+    const plugins: PluginConfig[] = opts.idPrefix
+      ? [...SVGO_PLUGINS, { name: 'prefixIds', params: { prefix: opts.idPrefix, delim: '-' } }]
+      : SVGO_PLUGINS
+    const result = optimize(svgContent, { plugins })
     let optimized = result.data
 
     if (opts.colorMode === 'currentColor') {

@@ -18,15 +18,6 @@ export interface LocalCategory {
 }
 
 /**
- * Local logo categories
- */
-export const localCategories: LocalCategory[] = [
-  { category: 'Community', total: 1 },
-  { category: 'Startup', total: 1 },
-  { category: 'Custom', total: 0 }
-]
-
-/**
  * Local logos - add new logos here
  * Keep the same structure as SVGL for consistency
  */
@@ -36,14 +27,16 @@ export const localLogos: LocalLogo[] = [
     title: 'shadcn-logos',
     category: 'Community',
     route: 'shadcn-logos'
-  },
-  {
-    id: 'example-company',
-    title: 'Example Company',
-    category: 'Startup',
-    route: 'example-company'
   }
 ]
+
+/**
+ * Local logo categories, counted from `localLogos` so they never drift
+ */
+export const localCategories: LocalCategory[] = [...new Set(localLogos.map(logo => logo.category))].map(category => ({
+  category,
+  total: localLogos.filter(logo => logo.category === category).length
+}))
 
 /**
  * Get all local logos
@@ -57,13 +50,6 @@ export function getLocalLogos(): LocalLogo[] {
  */
 export function getLocalLogoById(id: string): LocalLogo | undefined {
   return localLogos.find(logo => logo.id === id)
-}
-
-/**
- * Get local logos by category
- */
-export function getLocalLogosByCategory(category: string): LocalLogo[] {
-  return localLogos.filter(logo => logo.category === category)
 }
 
 /**

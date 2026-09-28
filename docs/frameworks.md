@@ -101,12 +101,29 @@ Use it:
 
 ## Raw SVG
 
-Set `framework: "raw"` (and usually `format: "svg"`) to write optimized `.svg` files with no
-component wrapper. Use them anywhere: `<img src="...">`, CSS backgrounds, or inline.
+Set `framework: "raw"` to write optimized `.svg` files with no component wrapper (`format`
+is ignored: raw always writes one `.svg` per logo). Use them anywhere: `<img src="...">`, CSS backgrounds, or inline.
 
 ```bash
 shadcn-logos add vercel   # writes vercel.svg to your outputDir
 ```
+
+## Light/dark and wordmark variants
+
+Many SVGL logos ship a dark-theme variant and a wordmark (icon plus name). By default `add`
+writes the light icon. Pick another variant with flags; the variant goes into the file and
+component name, so you can keep several side by side:
+
+```bash
+shadcn-logos add vercel                    # vercel.tsx               → VercelLogo
+shadcn-logos add vercel --dark             # vercel-dark.tsx          → VercelDarkLogo
+shadcn-logos add vercel --wordmark         # vercel-wordmark.tsx      → VercelWordmarkLogo
+shadcn-logos add vercel --wordmark --dark  # vercel-wordmark-dark.tsx → VercelWordmarkDarkLogo
+```
+
+With `colorMode: "currentColor"` a monochrome icon already adapts to dark mode, so `--dark`
+matters most with `colorMode: "original"`. Wordmark components bind `size` to the height
+only; the width follows the aspect ratio.
 
 ## How the size prop works
 

@@ -15,7 +15,7 @@ bunx shadcn-logos@latest add vercel github react
 `shadcn-logos` is **not** a logo library. Just like shadcn/ui copies UI components into your
 project, this copies logo components into your project. You get the actual code, so you own it
 and can style or change it however you like. Logos come from the [SVGL](https://svgl.app)
-registry (500+ brands) plus a small bundled set.
+registry (650+ brands) plus a small bundled set.
 
 ## Why
 
@@ -24,7 +24,15 @@ registry (500+ brands) plus a small bundled set.
 - **Your stack.** React, Vue, Svelte, or raw optimized SVG.
 - **Dark mode by default.** `currentColor` mode makes monochrome logos inherit your text color; `fill="none"` is preserved.
 - **Clean output.** SVGs are minified with [svgo](https://github.com/svg/svgo); React markup is valid JSX (`fill-rule` becomes `fillRule`, and so on).
-- **Typed.** TypeScript components with a typed props interface, validated config, and a 30+ case test suite.
+- **Typed.** TypeScript components with a typed props interface, validated config, and a tested core.
+
+### Why not `shadcn add` straight from SVGL?
+
+SVGL now publishes its own shadcn registry (`npx shadcn@latest add https://svgl.app/r/vercel.json`).
+If you are on React and want each brand's original colors, that works well. `shadcn-logos`
+adds Vue, Svelte, and raw SVG output; a `size` prop; `currentColor` theming so monochrome
+logos follow your text color; svgo-minified markup; and fuzzy names
+(`add nextjs github stripe`) instead of exact registry slugs.
 
 ## Quick start
 
@@ -42,6 +50,7 @@ Or set up a config once and add many:
 bunx shadcn-logos@latest init -y      # detect framework + TypeScript, write logos.config.json
 shadcn-logos add vercel github react  # add several at once
 shadcn-logos add vercel --dry-run     # preview without writing files
+shadcn-logos add vercel --wordmark --dark  # wordmark, dark-theme variant
 ```
 
 ### 2. Use it
@@ -75,7 +84,7 @@ Full documentation lives in [`docs/`](./docs/):
 | Command | What it does |
 | --- | --- |
 | `init` | Create `logos.config.json` (use `-y` for defaults). |
-| `add <logos...>` | Add logos. `--dry-run` to preview, `--force` to overwrite, `--silent` for quiet output. |
+| `add <logos...>` | Add logos. `--dark` / `--wordmark` for variants, `--dry-run` to preview, `--force` to overwrite. |
 | `list` | Browse the catalog. `--category`, `--search`, `--limit`. |
 | `search <query>` | Find logos by name. |
 | `cache` | Manage the response cache. `--stats`, `--clear`. |
@@ -95,10 +104,10 @@ See [docs/frameworks.md](./docs/frameworks.md) for real output examples.
 
 ## What you get
 
-🎨 500+ logos from top companies and tools
+🎨 650+ logos from top companies and tools
 📁 Actual component code, copy not import
 ⚡ Optimized SVGs, small file sizes
-🌗 Dark/light variants when available
+🌗 Dark variants and wordmarks when available (`--dark`, `--wordmark`)
 ✨ Fully customizable, edit the code however you want
 🔧 TypeScript-ready with full type definitions
 

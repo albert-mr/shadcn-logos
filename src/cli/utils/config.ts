@@ -43,7 +43,7 @@ export function loadConfig(cwd: string = process.cwd()): Config {
     if (!isValidConfig(rawConfig)) {
       const validation = configSchema.safeParse(rawConfig)
       if (!validation.success) {
-        const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+        const errors = validation.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
         throw new ConfigurationError(`Invalid configuration: ${errors}`, configPath)
       }
     }
@@ -70,7 +70,7 @@ export function saveConfig(config: Config, cwd: string = process.cwd()): void {
     if (!isValidConfig(config)) {
       const validation = configSchema.safeParse(config)
       if (!validation.success) {
-        const errors = validation.error.errors.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
+        const errors = validation.error.issues.map(e => `${e.path.join('.')}: ${e.message}`).join(', ')
         throw new ConfigurationError(`Invalid configuration: ${errors}`, configPath)
       }
     }

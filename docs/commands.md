@@ -39,6 +39,7 @@ shadcn-logos add vercel
 shadcn-logos add vercel github react typescript
 shadcn-logos add vercel --dry-run
 shadcn-logos add github --force
+shadcn-logos add vercel --wordmark --dark
 ```
 
 | Option | Description |
@@ -46,6 +47,8 @@ shadcn-logos add github --force
 | `-f, --force` | Overwrite files that already exist. Without this, an existing file is an error so you do not lose edits. |
 | `--dry-run` | Print what would be written, without creating any files. |
 | `-s, --silent` | Minimal output: no progress bar, no usage examples. |
+| `--dark` | Use the dark-theme variant when the logo has one (falls back to the only variant otherwise). |
+| `-w, --wordmark` | Add the wordmark (icon plus name) instead of the icon. Fails if the logo has no wordmark. |
 
 How names resolve: each name is matched against the catalog in this order: exact title,
 then title ignoring punctuation (`nextjs` matches `Next.js`), then a substring match. If
@@ -68,7 +71,7 @@ shadcn-logos list --limit 200
 
 | Option | Description |
 | --- | --- |
-| `-c, --category <category>` | Show only logos in a category (for example `ai`, `database`). |
+| `-c, --category <category>` | Show only logos in a category, case-insensitive (for example `ai`, `database`). |
 | `-s, --search <query>` | Filter the list by name. |
 | `--limit <number>` | Maximum number of logos to show. Default `50`. |
 
@@ -115,9 +118,6 @@ These appear in `--help` and are accepted on any command:
 | --- | --- |
 | `--version` | Active. Prints the installed version. |
 | `--help` | Active. Prints help. |
-| `--no-cache` | Reserved. Parsed today but not yet wired to behavior. |
-| `--verbose` | Reserved. Parsed today but not yet wired to behavior. |
-| `-C, --config <path>` | Reserved. Parsed today but not yet wired to behavior. |
 
 ---
 

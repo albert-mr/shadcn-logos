@@ -1,6 +1,6 @@
 {
   "name": "shadcn-logos",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Copy brand logo components into your project, like shadcn/ui but for logos. React, Vue, Svelte, and optimized SVG.",
   "keywords": [
     "cli",
@@ -45,7 +45,7 @@
     "LICENSE"
   ],
   "engines": {
-    "node": ">=18"
+    "node": ">=20"
   },
   "scripts": {
     "build": "tsup",
@@ -61,29 +61,24 @@
   },
   "dependencies": {
     "cli-progress": "^3.12.0",
-    "commander": "^12.1.0",
-    "fs-extra": "^11.2.0",
-    "inquirer": "^12.0.0",
-    "ora": "^8.1.0",
+    "commander": "^15.0.0",
+    "inquirer": "^14.2.2",
+    "ora": "^9.4.1",
     "picocolors": "^1.1.1",
-    "svgo": "^3.3.2",
-    "zod": "^3.23.8"
+    "svgo": "^4.1.0",
+    "zod": "^4.6.5"
   },
   "devDependencies": {
-    "@eslint/js": "9.33.0",
-    "@types/bun": "latest",
+    "@eslint/js": "^10.0.1",
     "@types/cli-progress": "^3.11.6",
-    "@types/fs-extra": "^11.0.4",
-    "@types/inquirer": "^9.0.7",
-    "@typescript-eslint/eslint-plugin": "^8.8.0",
-    "@typescript-eslint/parser": "^8.8.0",
-    "eslint": "^9.12.0",
-    "tsup": "^8.3.0",
-    "tsx": "^4.19.1",
-    "typescript-eslint": "^8.61.0",
-    "vitest": "^2.1.2"
-  },
-  "peerDependencies": {
-    "typescript": "^5"
+    "@types/node": "22",
+    "@typescript-eslint/eslint-plugin": "^8.70.1",
+    "@typescript-eslint/parser": "^8.70.1",
+    "eslint": "^10.11.0",
+    "tsup": "^8.5.1",
+    "tsx": "^4.23.15",
+    "typescript": "~6.0",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "^5.0.2"
   }
 }

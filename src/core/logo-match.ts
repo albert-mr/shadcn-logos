@@ -28,6 +28,12 @@ export function matchLogo(allLogos: Logo[], name: string): Logo | null {
   return partial ?? null
 }
 
+/** Logos in a category, case-insensitively; a logo may list several categories. */
+export function filterByCategory(allLogos: Logo[], category: string): Logo[] {
+  const want = category.toLowerCase()
+  return allLogos.filter((l) => [l.category].flat().some((c) => c.toLowerCase() === want))
+}
+
 /** Resolve many names, partitioning into found logos and not-found names. */
 export function findLogosInList(
   allLogos: Logo[],
@@ -43,4 +49,24 @@ export function findLogosInList(
   }
 
   return { found, notFound }
+}
+
+/**
+ * Pick which SVG to fetch for a logo: icon or wordmark, light or dark. The
+ * returned title carries the variant ("Vercel Wordmark Dark") so file and
+ * component names don't collide when several variants of one logo are added.
+ * Returns null when a wordmark is requested but the logo has none. A missing
+ * dark variant falls back to the only one available.
+ */
+export function resolveVariant(
+  logo: Logo,
+  opts: { dark?: boolean; wordmark?: boolean },
+): { title: string; route: string } | null {
+  const source = opts.wordmark ? logo.wordmark : logo.route
+  if (!source) return null
+
+  let title = opts.wordmark ? `${logo.title} Wordmark` : logo.title
+  if (typeof source === 'string') return { title, route: source }
+  if (opts.dark) title += ' Dark'
+  return { title, route: opts.dark ? source.dark : source.light }
 }

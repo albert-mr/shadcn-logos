@@ -7,13 +7,14 @@ import { svglApi } from './api.js'
 import { optimizeSvg } from './svg.js'
 import { generateComponent } from './component-generator.js'
 import { sanitizeFileName } from './naming.js'
+import { resolveVariant } from './logo-match.js'
 import type { Logo, Config, InstallOptions } from '../types/index.js'
 
 export class LogoInstaller {
   constructor(private config: Config) {}
 
   async install(options: InstallOptions): Promise<Logo[]> {
-    const { found, notFound } = await svglApi.findLogos(options.logos)
+    const { found: matched, notFound } = await svglApi.findLogos(options.logos)
 
     if (notFound.length > 0) {
       const allLogos = await svglApi.getAllLogos()
@@ -24,6 +25,19 @@ export class LogoInstaller {
       ;(error as any).notFound = notFound
       ;(error as any).available = logoNames
       throw error
+    }
+
+    // Swap in the requested variant's route/title so everything downstream
+    // (fetch, file name, component name) works on a plain string route.
+    const found: Logo[] = []
+    const noWordmark: string[] = []
+    for (const logo of matched) {
+      const variant = resolveVariant(logo, options)
+      if (variant) found.push({ ...logo, ...variant })
+      else noWordmark.push(logo.title)
+    }
+    if (noWordmark.length > 0) {
+      throw new Error(`No wordmark available for: ${noWordmark.join(', ')}`)
     }
 
     if (options.dryRun) {
@@ -124,22 +138,24 @@ export class LogoInstaller {
       await mkdir(outputDir, { recursive: true })
     }
 
-    if (this.config.format === 'svg' || this.config.format === 'both') {
+    // framework "raw" has no component form: always write a plain .svg, once.
+    const raw = this.config.framework === 'raw'
+
+    if (raw || this.config.format === 'svg' || this.config.format === 'both') {
       await this.installSvgFile(logo, outputDir, options)
     }
 
-    if (this.config.format === 'component' || this.config.format === 'both') {
+    if (!raw && (this.config.format === 'component' || this.config.format === 'both')) {
       await this.installComponent(logo, outputDir, options)
     }
   }
 
-  private logoRoute(logo: Logo): string {
-    return typeof logo.route === 'string' ? logo.route : logo.route.light
-  }
-
   private async installSvgFile(logo: Logo, outputDir: string, options: InstallOptions): Promise<void> {
-    const svgContent = await svglApi.getLogoSvg(this.logoRoute(logo))
-    const optimizedSvg = optimizeSvg(svgContent, { colorMode: this.config.style.colorMode })
+    const svgContent = await svglApi.getLogoSvg(logo.route as string)
+    const optimizedSvg = optimizeSvg(svgContent, {
+      colorMode: this.config.style.colorMode,
+      idPrefix: sanitizeFileName(logo.title),
+    })
     const fileName = `${sanitizeFileName(logo.title)}.svg`
     const filePath = join(outputDir, fileName)
 
@@ -151,8 +167,8 @@ export class LogoInstaller {
   }
 
   private async installComponent(logo: Logo, outputDir: string, options: InstallOptions): Promise<void> {
-    const svgContent = await svglApi.getLogoSvg(this.logoRoute(logo))
-    const componentContent = generateComponent(this.config, logo, svgContent)
+    const svgContent = await svglApi.getLogoSvg(logo.route as string)
+    const componentContent = generateComponent(this.config, logo, svgContent, { wordmark: options.wordmark })
     const fileName = `${sanitizeFileName(logo.title)}${this.componentExtension()}`
     const filePath = join(outputDir, fileName)
 

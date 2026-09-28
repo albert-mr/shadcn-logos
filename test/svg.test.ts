@@ -32,4 +32,14 @@ describe('optimizeSvg', () => {
   it('never throws; returns a string for non-svg input', () => {
     expect(typeof optimizeSvg('<<<not svg', { colorMode: 'original' })).toBe('string')
   })
+
+  it('prefixes ids and their references so inlined logos do not collide', () => {
+    const out = optimizeSvg(
+      '<svg viewBox="0 0 24 24"><defs><clipPath id="clip0_1"><path d="M0 0h24v24H0z"/></clipPath></defs><g clip-path="url(#clip0_1)"><path d="M2 2h20v20H2z"/><path d="M3 3h2v2H3z"/></g></svg>',
+      { colorMode: 'original', idPrefix: 'vercel' },
+    )
+    expect(out).toMatch(/id="vercel-[^"]+"/)
+    expect(out).toMatch(/url\(#vercel-[^)]+\)/)
+    expect(out).not.toMatch(/id="(?!vercel-)/)
+  })
 })

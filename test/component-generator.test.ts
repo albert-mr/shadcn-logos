@@ -62,6 +62,12 @@ describe('generateComponent — React', () => {
     expect(out).not.toContain('interface')
     expect(out).toContain('width={size}')
   })
+
+  it('wordmarks bind size to height only so the aspect ratio survives', () => {
+    const out = generateComponent(cfg(), logo, RAW, { wordmark: true })
+    expect(out).toContain('<svg height={size} {...otherProps}')
+    expect(out).not.toContain('width=')
+  })
 })
 
 describe('generateComponent — Vue', () => {

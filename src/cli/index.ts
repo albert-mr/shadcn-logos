@@ -63,6 +63,8 @@ async function main() {
     .option('-f, --force', 'Overwrite existing files')
     .option('--dry-run', 'Show what would be installed without making changes')
     .option('-s, --silent', 'Minimal output')
+    .option('--dark', 'Use the dark-theme variant when the logo has one')
+    .option('-w, --wordmark', 'Add the wordmark (name + logo) instead of the icon')
     .action(addCommand)
 
   program
@@ -87,12 +89,6 @@ async function main() {
     .option('--clear', 'Clear all cached data')
     .option('--stats', 'Show cache statistics')
     .action(cacheCommand)
-
-  // Global options
-  program
-    .option('--no-cache', 'Disable caching for this command')
-    .option('--verbose', 'Enable verbose output')
-    .option('-C, --config <path>', 'Specify config file path')
 
   // Global error handler
   process.on('uncaughtException', (error: Error) => {

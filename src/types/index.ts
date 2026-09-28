@@ -39,7 +39,7 @@ export const configSchema = z.object({
     colorMode: z.enum(['currentColor', 'original']),
     cssVariables: z.boolean()
   }),
-  aliases: z.record(z.string()).optional(),
+  aliases: z.record(z.string(), z.string()).optional(),
   registry: z.object({
     source: z.literal('svgl'),
     cache: z.boolean()
@@ -50,7 +50,9 @@ export const installOptionsSchema = z.object({
   logos: z.array(z.string()),
   force: z.boolean().optional(),
   dryRun: z.boolean().optional(),
-  silent: z.boolean().optional()
+  silent: z.boolean().optional(),
+  dark: z.boolean().optional(),
+  wordmark: z.boolean().optional()
 })
 
 export const searchResultSchema = z.object({
