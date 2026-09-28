@@ -1,8 +1,10 @@
 # Configuration
 
-`shadcn-logos` reads a `logos.config.json` file from your project root. Create it with
-`shadcn-logos init`, or write it by hand. If the file is missing, `add` reports a config
-error (exit code `2`) and asks you to run `init`.
+`shadcn-logos` reads an optional `logos.config.json` file from your project root. Create it
+with `shadcn-logos init`, or write it by hand. Without one, `add` detects your framework and
+TypeScript and uses defaults in memory. React, Vue, and Svelte components go in
+`./src/components/logos`; other projects get SVGs in `./assets/logos`.
+An existing invalid config still reports an error (exit code `2`).
 
 ## Example
 
@@ -66,6 +68,10 @@ can always override it per usage: `<VercelLogo size={48} />`.
 | --- | --- |
 | `currentColor` | Concrete fill and stroke colors are rewritten to `currentColor`, so the logo inherits the surrounding text color. `fill="none"` is preserved. |
 | `original` | The logo keeps its own brand colors. |
+
+Override this setting for one `add` command with `--color-mode original` or `--color-mode currentColor`.
+The flag applies to every logo in that command, for both component and SVG output, without
+changing your config. Use separate commands for logos that need different color modes.
 
 ## Reserved fields
 

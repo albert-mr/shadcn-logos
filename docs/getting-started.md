@@ -22,7 +22,7 @@ npm install -g shadcn-logos
 shadcn-logos add vercel
 ```
 
-## 2. Create a config (recommended)
+## 2. Save preferences (optional)
 
 `init` writes a `logos.config.json` to your project root. It remembers your framework,
 output folder, and style preferences so every later `add` does the right thing.
@@ -35,20 +35,28 @@ bunx shadcn-logos@latest init
 bunx shadcn-logos@latest init -y
 ```
 
-If you skip this step, `add` falls back to the defaults: a React + TypeScript component
-written to `./src/components/logos`. See [Configuration](./configuration.md) for every option.
+If you skip this step, `add` detects React, Vue, Svelte, and TypeScript from your project
+and writes components to `./src/components/logos`. Without a detected framework, it writes
+SVGs to `./assets/logos`. It does not create a config file. See [Configuration](./configuration.md)
+for every option.
 
 ## 3. Add logos
 
 ```bash
 # One logo
-shadcn-logos add vercel
+bunx shadcn-logos@latest add vercel
 
 # Several at once
-shadcn-logos add vercel github react typescript
+bunx shadcn-logos@latest add vercel github react typescript
+
+# Keep a multicolor brand's original colors
+bunx shadcn-logos@latest add google --color-mode original
+
+# Make a logo inherit text color
+bunx shadcn-logos@latest add github --color-mode currentColor
 
 # See what would be written, without touching disk
-shadcn-logos add vercel --dry-run
+bunx shadcn-logos@latest add vercel --dry-run
 ```
 
 Names are matched loosely, so `nextjs`, `next.js`, and `Next.js` all resolve to the same
@@ -79,6 +87,7 @@ fight and no import from `node_modules` to override.
 ## Next steps
 
 - Browse everything that is available: `shadcn-logos list`
+- Copy a [logo wall, integration grid, or sign-in button](./examples.md).
 - Find a specific logo: `shadcn-logos search supabase`
 - Read the full [command reference](./commands.md) and [configuration guide](./configuration.md).
 - Working in Vue or Svelte? See [Frameworks and output](./frameworks.md).

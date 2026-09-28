@@ -26,14 +26,22 @@ export function configExists(cwd: string = process.cwd()): boolean {
   return existsSync(getConfigPath(cwd))
 }
 
+export function detectConfig(cwd: string = process.cwd()): Config {
+  const framework = detectFramework(cwd)
+  return {
+    ...DEFAULT_CONFIG,
+    framework,
+    typescript: detectTypeScript(cwd),
+    outputDir: framework === 'raw' ? './assets/logos' : DEFAULT_CONFIG.outputDir,
+    format: framework === 'raw' ? 'svg' : DEFAULT_CONFIG.format,
+  }
+}
+
 export function loadConfig(cwd: string = process.cwd()): Config {
   const configPath = getConfigPath(cwd)
   
   if (!existsSync(configPath)) {
-    throw new ConfigurationError(
-      'Configuration file not found. Run "shadcn-logos init" first.',
-      configPath
-    )
+    return detectConfig(cwd)
   }
 
   try {

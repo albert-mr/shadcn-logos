@@ -12,6 +12,7 @@ bunx shadcn-logos@latest add vercel github react
 ## Start here
 
 - [Getting started](./getting-started.md) — install, configure, add your first logo, and use it.
+- [Examples](./examples.md) — copyable logo wall, integration grid, and sign-in buttons.
 
 ## Reference
 

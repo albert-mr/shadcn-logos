@@ -32,7 +32,9 @@ with the detected settings). See [Configuration](./configuration.md) for what ea
 
 ## `add <logos...>` (alias: `a`)
 
-Add one or more logos to your project. This is the main command.
+Add one or more logos to your project. This is the main command. Config is optional:
+without it, the CLI detects the framework and TypeScript, using `src/components/logos` for
+components or `assets/logos` for raw SVGs. It does not save a config file.
 
 ```bash
 shadcn-logos add vercel
@@ -40,6 +42,8 @@ shadcn-logos add vercel github react typescript
 shadcn-logos add vercel --dry-run
 shadcn-logos add github --force
 shadcn-logos add vercel --wordmark --dark
+shadcn-logos add google --color-mode original
+shadcn-logos add github --color-mode currentColor
 ```
 
 | Option | Description |
@@ -49,6 +53,7 @@ shadcn-logos add vercel --wordmark --dark
 | `-s, --silent` | Minimal output: no progress bar, no usage examples. |
 | `--dark` | Use the dark-theme variant when the logo has one (falls back to the only variant otherwise). |
 | `-w, --wordmark` | Add the wordmark (icon plus name) instead of the icon. Fails if the logo has no wordmark. |
+| `--color-mode <mode>` | `original` keeps brand colors; `currentColor` inherits text color. Overrides config for all logos in this command without saving it. Invalid values are rejected. |
 
 How names resolve: each name is matched against the catalog in this order: exact title,
 then title ignoring punctuation (`nextjs` matches `Next.js`), then a substring match. If
@@ -129,7 +134,7 @@ The CLI returns a specific exit code per failure type, which is handy in scripts
 | --- | --- |
 | `0` | Success. |
 | `1` | General error. |
-| `2` | Configuration error (missing or invalid `logos.config.json`). |
+| `2` | Configuration error (invalid or unreadable `logos.config.json`). |
 | `3` | Network error (could not reach the registry). |
 | `4` | Logo not found. |
 | `5` | Permission error (could not write to the output directory). |

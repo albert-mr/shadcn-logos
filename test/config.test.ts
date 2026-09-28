@@ -25,8 +25,19 @@ describe('config load/save', () => {
   it('DEFAULT_CONFIG passes schema validation', () => {
     expect(isValidConfig(DEFAULT_CONFIG)).toBe(true)
   })
-  it('loadConfig throws a helpful error when the file is missing', () => {
-    expect(() => loadConfig(dir)).toThrow(/not found/i)
+  it('uses raw SVG defaults without config or a framework', () => {
+    expect(loadConfig(dir)).toMatchObject({
+      framework: 'raw', typescript: false, format: 'svg', outputDir: './assets/logos',
+    })
+    expect(configExists(dir)).toBe(false)
+  })
+  it.each(['react', 'vue', 'svelte'])('detects %s for a first run without saving config', (framework) => {
+    fs.writeFileSync(path.join(dir, 'package.json'), JSON.stringify({ dependencies: { [framework]: '*' } }))
+    fs.writeFileSync(path.join(dir, 'tsconfig.json'), '{}')
+    expect(loadConfig(dir)).toMatchObject({
+      framework, typescript: true, format: 'component', outputDir: './src/components/logos',
+    })
+    expect(configExists(dir)).toBe(false)
   })
   it('saves then loads back the same config', () => {
     saveConfig(DEFAULT_CONFIG, dir)

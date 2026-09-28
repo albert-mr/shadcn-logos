@@ -3,9 +3,11 @@
 Each failure exits with a specific [code](./commands.md#exit-codes), which is also useful in
 scripts and CI.
 
-## "Configuration file not found" (exit 2)
+## The detected framework or output directory is wrong
 
-You ran `add` (or another command that needs config) before creating one.
+Run `add` from the app's root (the directory with its `package.json`). Config is optional;
+without it, the CLI detects your framework and TypeScript. To override the detected settings,
+create a config:
 
 ```bash
 shadcn-logos init      # interactive

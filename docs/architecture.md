@@ -65,7 +65,8 @@ These are mostly pure functions, which is what makes them easy to unit-test.
 
 ## The `add` data flow
 
-1. `add.ts` loads and validates `logos.config.json`.
+1. `add.ts` loads and validates `logos.config.json`, or detects defaults when it is absent.
+   A `--color-mode` override applies in memory before the installer runs.
 2. `installer.install` calls `api.findLogos`, which loads the full catalog (`getAllLogos`:
    bundled local logos plus the SVGL API, cached) and resolves each typed name via
    `logo-match`. Unresolved names abort the run with suggestions (exit code `4`).
