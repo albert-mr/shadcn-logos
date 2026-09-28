@@ -1,6 +1,6 @@
 // The executable shebang is added by tsup (see banner in tsup.config.ts); keeping
 // one here too would emit a duplicate `#!` on line 2 of the bundle and crash node.
-import { Command } from 'commander'
+import { Command, Option } from 'commander'
 import { readFileSync } from 'fs'
 import { fileURLToPath } from 'url'
 import { dirname, join } from 'path'
@@ -65,6 +65,7 @@ async function main() {
     .option('-s, --silent', 'Minimal output')
     .option('--dark', 'Use the dark-theme variant when the logo has one')
     .option('-w, --wordmark', 'Add the wordmark (name + logo) instead of the icon')
+    .addOption(new Option('--color-mode <mode>', 'Override logo colors for this command').choices(['original', 'currentColor']))
     .action(addCommand)
 
   program

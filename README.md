@@ -44,13 +44,19 @@ No install needed, run it on demand:
 bunx shadcn-logos@latest add vercel
 ```
 
-Or set up a config once and add many:
+The CLI detects React, Vue, Svelte, and TypeScript from your project. Components go in
+`src/components/logos`; projects without a detected framework get SVGs in `assets/logos`.
+No config file is required or created by `add`.
+
+Choose colors per command, or save your preferences with an optional config:
 
 ```bash
-bunx shadcn-logos@latest init -y      # detect framework + TypeScript, write logos.config.json
-shadcn-logos add vercel github react  # add several at once
-shadcn-logos add vercel --dry-run     # preview without writing files
-shadcn-logos add vercel --wordmark --dark  # wordmark, dark-theme variant
+bunx shadcn-logos@latest add google --color-mode original   # keep brand colors
+bunx shadcn-logos@latest add github --color-mode currentColor  # inherit text color
+bunx shadcn-logos@latest init -y      # save detected settings to logos.config.json
+bunx shadcn-logos@latest add vercel github react  # add several at once
+bunx shadcn-logos@latest add vercel --dry-run     # preview without writing files
+bunx shadcn-logos@latest add vercel --wordmark --dark  # wordmark, dark-theme variant
 ```
 
 ### 2. Use it
@@ -73,6 +79,7 @@ viewBox, wrap it in your own component. There is no library to override.
 Full documentation lives in [`docs/`](./docs/):
 
 - **[Getting started](./docs/getting-started.md)** — install, configure, add your first logo.
+- **[Examples](./docs/examples.md)** — copyable logo wall, integration grid, and sign-in buttons.
 - **[Commands](./docs/commands.md)** — every command, flag, and exit code.
 - **[Configuration](./docs/configuration.md)** — the `logos.config.json` file, field by field.
 - **[Frameworks and output](./docs/frameworks.md)** — React, Vue, Svelte, and raw SVG, plus the `size` prop and `currentColor`.
@@ -84,7 +91,7 @@ Full documentation lives in [`docs/`](./docs/):
 | Command | What it does |
 | --- | --- |
 | `init` | Create `logos.config.json` (use `-y` for defaults). |
-| `add <logos...>` | Add logos. `--dark` / `--wordmark` for variants, `--dry-run` to preview, `--force` to overwrite. |
+| `add <logos...>` | Add logos. `--color-mode` for colors, `--dark` / `--wordmark` for variants, `--dry-run` to preview, `--force` to overwrite. |
 | `list` | Browse the catalog. `--category`, `--search`, `--limit`. |
 | `search <query>` | Find logos by name. |
 | `cache` | Manage the response cache. `--stats`, `--clear`. |

@@ -146,3 +146,7 @@ mode:
 
 `fill="none"` is left untouched, so outlined and stroke-only logos still render correctly.
 Set `colorMode: "original"` to keep each brand's real colors.
+
+For a one-off choice, use `shadcn-logos add google --color-mode original` or
+`shadcn-logos add github --color-mode currentColor`. These flags work with every output framework
+and do not change the saved config. Prefer `original` for multicolor logos.

@@ -29,6 +29,16 @@ describe('optimizeSvg', () => {
     expect(out).not.toContain('currentColor')
   })
 
+  it('inherits text color when a black fill is implicit or removed by optimization', () => {
+    for (const fill of ['', ' fill="#000"', ' fill="none"']) {
+      const out = optimizeSvg(
+        `<svg viewBox="0 0 24 24"${fill}><path d="M2 2h20v20H2z"/></svg>`,
+        { colorMode: 'currentColor' },
+      )
+      expect(out).toMatch(fill.includes('none') ? /<svg[^>]*fill="none"/ : /<svg[^>]*fill="currentColor"/)
+    }
+  })
+
   it('never throws; returns a string for non-svg input', () => {
     expect(typeof optimizeSvg('<<<not svg', { colorMode: 'original' })).toBe('string')
   })

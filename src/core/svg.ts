@@ -53,7 +53,12 @@ export function optimizeSvg(svgContent: string, opts: { colorMode: ColorMode; id
     // would share `#a` and clip/mask each other. Prefix them per logo.
     const plugins: PluginConfig[] = opts.idPrefix
       ? [...SVGO_PLUGINS, { name: 'prefixIds', params: { prefix: opts.idPrefix, delim: '-' } }]
-      : SVGO_PLUGINS
+      : [...SVGO_PLUGINS]
+    if (opts.colorMode === 'currentColor') {
+      // Black fills may be implicit or removed by SVGO. Supply an inherited fill
+      // after optimization; this plugin leaves existing fills (including none) alone.
+      plugins.push({ name: 'addAttributesToSVGElement', params: { attributes: [{ fill: 'currentColor' }] } })
+    }
     const result = optimize(svgContent, { plugins })
     let optimized = result.data
 

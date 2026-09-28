@@ -7,6 +7,18 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+### Added
+
+- `add --color-mode original|currentColor` overrides colors for one command without editing config.
+- Copyable React examples for a logo wall, integration grid, and social sign-in buttons.
+
+### Fixed
+
+- `add` now works without `init`: detects framework and TypeScript without writing config.
+  Both first-run defaults and `init -y` use `assets/logos` and SVG format for raw projects.
+- Monochrome logos with implicit black fills (such as Vercel) now inherit text color in
+  `currentColor` mode, including after SVG optimization removes an explicit black fill.
+
 ## [0.3.0] - 2026-09-27
 
 Everything below ships to npm for the first time; 0.2.0 still has the broken `size` prop and

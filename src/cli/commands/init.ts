@@ -6,7 +6,7 @@ import {
   saveConfig, 
   detectFramework, 
   detectTypeScript,
-  DEFAULT_CONFIG
+  detectConfig
 } from '../utils/config.js'
 import type { Config } from '../../types/index.js'
 
@@ -38,17 +38,10 @@ export async function initCommand(options: InitOptions) {
   let config: Config
 
   if (options.yes) {
-    const detectedFramework = detectFramework()
-    const detectedTypeScript = detectTypeScript()
+    config = detectConfig()
 
-    config = {
-      ...DEFAULT_CONFIG,
-      framework: detectedFramework,
-      typescript: detectedTypeScript
-    }
-
-    logger.info(`Auto-detected framework: ${detectedFramework}`)
-    logger.info(`Auto-detected TypeScript: ${detectedTypeScript ? 'Yes' : 'No'}`)
+    logger.info(`Auto-detected framework: ${config.framework}`)
+    logger.info(`Auto-detected TypeScript: ${config.typescript ? 'Yes' : 'No'}`)
   } else {
     const answers = await inquirer.prompt([
       {

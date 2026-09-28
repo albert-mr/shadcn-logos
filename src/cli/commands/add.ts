@@ -4,9 +4,9 @@ import { loadConfig } from '../utils/config.js'
 import { LogoInstaller } from '../../core/installer.js'
 import { toComponentName, sanitizeFileName } from '../../core/naming.js'
 import { EnhancedErrorHandler, ExitCode } from '../utils/error-handler.js'
-import type { InstallOptions } from '../../types/index.js'
+import type { Config, InstallOptions } from '../../types/index.js'
 
-export async function addCommand(logos: string[], options: Partial<InstallOptions>) {
+export async function addCommand(logos: string[], options: Partial<InstallOptions> & { colorMode?: Config['style']['colorMode'] }) {
   if (logos.length === 0) {
     logger.error('Please specify at least one logo to add.')
     logger.highlight('  Example: shadcn-logos add vercel github')
@@ -23,7 +23,10 @@ export async function addCommand(logos: string[], options: Partial<InstallOption
     process.exit(result.code)
   }
 
-  const installer = new LogoInstaller(config)
+  const installer = new LogoInstaller({
+    ...config,
+    style: { ...config.style, colorMode: options.colorMode ?? config.style.colorMode },
+  })
   const installOptions: InstallOptions = {
     logos,
     force: options.force || false,
