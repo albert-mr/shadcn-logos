@@ -7,6 +7,8 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-09-28
+
 ### Added
 
 - `add --color-mode original|currentColor` overrides colors for one command without editing config.
@@ -82,7 +84,8 @@ Initial public release on npm.
 
 First version.
 
-[Unreleased]: https://github.com/albert-mr/shadcn-logos/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/albert-mr/shadcn-logos/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/albert-mr/shadcn-logos/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/albert-mr/shadcn-logos/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/albert-mr/shadcn-logos/releases/tag/v0.2.0
 [0.1.0]: https://github.com/albert-mr/shadcn-logos/releases/tag/v0.1.0

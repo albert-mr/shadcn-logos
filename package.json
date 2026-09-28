@@ -1,6 +1,6 @@
 {
   "name": "shadcn-logos",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Copy brand logo components into your project, like shadcn/ui but for logos. React, Vue, Svelte, and optimized SVG.",
   "keywords": [
     "cli",
