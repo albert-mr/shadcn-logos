@@ -7,6 +7,37 @@ project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
 
+## [0.5.0] - 2026-11-20
+
+### Added
+
+- A notice when a name matched a logo only approximately (`"verc" matched "Vercel"`).
+
+### Changed
+
+- Titles containing `+`, `#` or `&` now get distinct names (`C++` → `c-plus-plus.tsx` /
+  `CPlusPlusLogo`, `C#` → `c-sharp.tsx` / `CSharpLogo`). Previously both were written as `c.tsx`.
+- `style.defaultSize` must be a number; values like `"24px"` are rejected instead of
+  producing broken components.
+- Releases are published by a tag-triggered workflow that runs the full check first.
+- Removed the `cli-progress` dependency.
+
+### Fixed
+
+- Logos with `<style>` blocks, string `style` attributes, `xlink:href` or other hyphenated
+  attributes now generate valid React components.
+- Inner elements keep their `width`/`height` (only the root `<svg>` is resized).
+- `<script>` elements and `on*` handlers are removed from downloaded SVGs.
+- Requesting the same logo twice installs it once; logos that would write the same file
+  now fail before anything is written.
+- Network timeout now covers the response body, not only the headers.
+- Malformed API responses are rejected or filtered instead of being cached.
+- The cache directory is created on first write; an unwritable home directory no longer
+  crashes the CLI. `SHADCN_LOGOS_CACHE_DIR` overrides the location.
+- `add` shows a single progress line (the spinner and progress bar no longer overlap).
+- `--dry-run` lists the files that would be written and flags existing ones.
+- Error hints no longer suggest `init --force`; Vue and Svelte usage hints show a default import.
+
 ## [0.4.0] - 2026-09-28
 
 ### Added
@@ -84,7 +115,8 @@ Initial public release on npm.
 
 First version.
 
-[Unreleased]: https://github.com/albert-mr/shadcn-logos/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/albert-mr/shadcn-logos/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/albert-mr/shadcn-logos/compare/v0.4.0...v0.5.0
 [0.4.0]: https://github.com/albert-mr/shadcn-logos/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/albert-mr/shadcn-logos/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/albert-mr/shadcn-logos/releases/tag/v0.2.0

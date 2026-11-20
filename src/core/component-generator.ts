@@ -11,7 +11,7 @@ import { toComponentName, sanitizeFileName } from './naming.js'
 
 /**
  * Inject attributes into the root `<svg>` tag, first stripping any baked-in
- * width/height. This is the load-bearing fix for the `size` prop: svgo's
+ * width/height from the root tag. This is the load-bearing fix for the `size` prop: svgo's
  * `removeDimensions` strips width/height, so the previous approach of
  * string-replacing an existing `width="…"` matched nothing and the size prop
  * was inert. Adding the attributes unconditionally guarantees they take effect.
@@ -19,7 +19,8 @@ import { toComponentName, sanitizeFileName } from './naming.js'
 export function applySvgProps(svg: string, attrs: string): string {
   return svg
     .trim()
-    .replace(/\s+(width|height)="[^"]*"/g, '')
+    // Only the root tag: inner <rect>/<mask>/<image> need their own width/height.
+    .replace(/^<svg[^>]*>/, (root) => root.replace(/\s+(width|height)="[^"]*"/g, ''))
     // Function replacer: a string replacement would interpret `$$`/`$&` in `attrs`
     // (e.g. Svelte's `{...$$restProps}` would collapse to `{...$restProps}`).
     .replace(/^<svg/, () => `<svg ${attrs}`)
@@ -28,31 +29,35 @@ export function applySvgProps(svg: string, attrs: string): string {
 /**
  * Convert SVG attribute names to their JSX equivalents so the embedded markup is
  * valid React (raw SVG uses `fill-rule`, `class`, etc. which React rejects /
- * drops with a warning). Only attribute names are rewritten, never values.
+ * drops with a warning). Any hyphenated or namespaced name is camelCased
+ * (`data-*` / `aria-*` are left as written) and `class` becomes `className`.
+ * A string `style` attribute is also converted to a style object, since React
+ * throws on string styles. Otherwise only names are rewritten, never values.
  */
-const JSX_ATTR_MAP: Record<string, string> = {
-  class: 'className',
-  'fill-rule': 'fillRule',
-  'clip-rule': 'clipRule',
-  'clip-path': 'clipPath',
-  'stroke-width': 'strokeWidth',
-  'stroke-linecap': 'strokeLinecap',
-  'stroke-linejoin': 'strokeLinejoin',
-  'stroke-miterlimit': 'strokeMiterlimit',
-  'stroke-dasharray': 'strokeDasharray',
-  'stroke-dashoffset': 'strokeDashoffset',
-  'stroke-opacity': 'strokeOpacity',
-  'fill-opacity': 'fillOpacity',
-  'stop-color': 'stopColor',
-  'stop-opacity': 'stopOpacity',
+const camelCase = (name: string): string => name.replace(/[-:]([a-zA-Z])/g, (_, c: string) => c.toUpperCase())
+
+/** `style="a-b:c;d:e"` → `style={{ "aB": "c", "d": "e" }}` (React rejects string styles). */
+function styleObject(css: string): string {
+  const pairs = css
+    .split(';')
+    .map((decl) => decl.trim())
+    .filter(Boolean)
+    .map((decl) => {
+      const i = decl.indexOf(':')
+      return `${JSON.stringify(camelCase(decl.slice(0, i).trim()))}: ${JSON.stringify(decl.slice(i + 1).trim())}`
+    })
+  return `{{ ${pairs.join(', ')} }}`
 }
 
 export function reactifyAttrs(svg: string): string {
-  let out = svg
-  for (const [from, to] of Object.entries(JSX_ATTR_MAP)) {
-    out = out.replace(new RegExp(`(\\s)${from}=`, 'g'), `$1${to}=`)
-  }
-  return out
+  return svg
+    // Any hyphenated or namespaced attribute name → camelCase (fill-rule → fillRule,
+    // xml:space → xmlSpace). data-* and aria-* are valid JSX as written.
+    .replace(/(\s)([a-zA-Z]+(?:[-:][a-zA-Z]+)+)=/g, (match, ws: string, name: string) =>
+      /^(data|aria)-/.test(name) ? match : `${ws}${camelCase(name)}=`,
+    )
+    .replace(/(\s)class=/g, '$1className=')
+    .replace(/\sstyle="([^"]*)"/g, (_, css: string) => ` style=${styleObject(css)}`)
 }
 
 /**

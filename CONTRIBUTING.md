@@ -15,7 +15,7 @@ Thank you for your interest in contributing to shadcn-logos! This document provi
 
 ### Prerequisites
 - [Bun](https://bun.sh) >= 1.0.0
-- Node.js >= 18
+- Node.js >= 20
 
 ### Local Development
 ```bash
@@ -141,7 +141,6 @@ By contributing, you agree that your contributions will be licensed under the MI
 
 Contributors will be acknowledged in:
 - Release notes
-- README contributors section
 - Special thanks for significant contributions
 
 ---

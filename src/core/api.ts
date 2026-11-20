@@ -1,4 +1,5 @@
 import type { Logo, Category } from '../types/index.js'
+import { logoSchema, categorySchema } from '../types/index.js'
 import { logoCache } from './cache/file-cache.js'
 import { getLocalLogos, searchLocalLogos, localCategories } from '../../data/logos.js'
 import type { LocalLogo } from '../../data/logos.js'
@@ -26,35 +27,34 @@ function normalizeLocalLogo(local: LocalLogo): Logo {
   }
 }
 
-async function fetchWithTimeout(url: string): Promise<Response> {
-  const controller = new AbortController()
-  const timer = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS)
+async function request<T>(url: string, read: (response: Response) => Promise<T>): Promise<T> {
   try {
-    return await fetch(url, { signal: controller.signal })
+    // The signal stays armed while the body is read, not just until headers arrive.
+    const response = await fetch(url, { signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) })
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+    }
+    return await read(response)
   } catch (error) {
-    if (error instanceof Error && error.name === 'AbortError') {
+    if (error instanceof Error && (error.name === 'TimeoutError' || error.name === 'AbortError')) {
       throw new Error(`Request timed out after ${FETCH_TIMEOUT_MS / 1000}s: ${url}`, { cause: error })
     }
     throw error
-  } finally {
-    clearTimeout(timer)
   }
 }
 
-async function fetchJson<T>(url: string): Promise<T> {
-  const response = await fetchWithTimeout(url)
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
-  }
-  return response.json() as Promise<T>
-}
+const fetchJson = (url: string): Promise<unknown> => request(url, (r) => r.json())
+const fetchText = (url: string): Promise<string> => request(url, (r) => r.text())
 
-async function fetchText(url: string): Promise<string> {
-  const response = await fetchWithTimeout(url)
-  if (!response.ok) {
-    throw new Error(`HTTP ${response.status}: ${response.statusText}`)
+/** Keep entries that match the schema; fail clearly if the payload is not a list. */
+function parseList<T>(data: unknown, schema: { safeParse: (v: unknown) => { success: boolean; data?: T } }, what: string): T[] {
+  if (!Array.isArray(data)) {
+    throw new Error(`Unexpected response from SVGL: expected a list of ${what}`)
   }
-  return response.text()
+  return data.flatMap((item) => {
+    const parsed = schema.safeParse(item)
+    return parsed.success ? [parsed.data as T] : []
+  })
 }
 
 export class SvglApiClient {
@@ -77,7 +77,7 @@ export class SvglApiClient {
       const localLogos = getLocalLogos().map(normalizeLocalLogo)
 
       // Get SVGL logos
-      const svglLogos = await fetchJson<Logo[]>(this.baseURL)
+      const svglLogos = parseList<Logo>(await fetchJson(this.baseURL), logoSchema, 'logos')
       
       // Combine both sources (local first)
       const allLogos = [...localLogos, ...svglLogos]
@@ -101,7 +101,7 @@ export class SvglApiClient {
       const localResults = searchLocalLogos(query).map(normalizeLocalLogo)
       
       // Search SVGL logos
-      const svglResults = await fetchJson<Logo[]>(`${this.baseURL}?search=${encodeURIComponent(query)}`)
+      const svglResults = parseList<Logo>(await fetchJson(`${this.baseURL}?search=${encodeURIComponent(query)}`), logoSchema, 'logos')
       
       // Combine results (local first)
       return [...localResults, ...svglResults]
@@ -120,7 +120,7 @@ export class SvglApiClient {
 
     try {
       // Get SVGL categories
-      const svglCategories = await fetchJson<Category[]>(`${this.baseURL}/categories`)
+      const svglCategories = parseList<Category>(await fetchJson(`${this.baseURL}/categories`), categorySchema, 'categories')
       
       // Combine with local categories
       const allCategories = [...localCategories, ...svglCategories]
@@ -170,7 +170,7 @@ export class SvglApiClient {
     return null
   }
 
-  async findLogos(names: string[]): Promise<{ found: Logo[]; notFound: string[] }> {
+  async findLogos(names: string[]): Promise<ReturnType<typeof findLogosInList>> {
     const allLogos = await this.getAllLogos()
     return findLogosInList(allLogos, names)
   }

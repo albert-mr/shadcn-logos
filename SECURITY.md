@@ -6,8 +6,8 @@ The latest published version receives security updates:
 
 | Version | Supported          |
 | ------- | ------------------ |
-| 0.2.x   | :white_check_mark: |
-| < 0.2   | :x:                |
+| 0.5.x   | :white_check_mark: |
+| < 0.5   | :x:                |
 
 ## Reporting a Vulnerability
 
@@ -28,19 +28,20 @@ Include as much detail as you can:
 ## Security Considerations
 
 ### Logo Sources
-- All logos are fetched from the trusted SVGL API (https://api.svgl.app)
-- SVGs are optimized and sanitized before installation
-- No executable code is embedded in logo files
+- SVG routes come from the SVGL catalog (https://svgl.app), fetched via its API (https://api.svgl.app)
+- Downloaded SVGs are optimized with svgo before installation
+- `<script>` elements and `on*` event handlers are removed from SVGs
 
 ### File System Access
-- The CLI only writes to user-specified directories
-- File operations include proper permission checks
-- No system files are modified outside the project directory
+- Components are written only to the output directory you choose
+- The CLI also keeps a response cache under `~/.shadcn-logos/cache` (override with `SHADCN_LOGOS_CACHE_DIR`)
+- No other files are written outside the project directory
 
 ### Network Requests
 - All HTTP requests use HTTPS
-- API responses are validated before processing
-- Caching is implemented securely with proper TTL
+- API responses are validated against a schema before processing
+- Requests time out after 15 seconds, covering the whole request
+- Cached responses expire after a fixed TTL
 
 ## Best Practices
 

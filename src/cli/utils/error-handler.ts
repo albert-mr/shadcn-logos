@@ -27,7 +27,6 @@ export class EnhancedErrorHandler {
     logger.dim('\n  Troubleshooting steps:')
     logger.highlight('    1. Check your internet connection')
     logger.highlight('    2. Try again in a few moments')
-    logger.highlight('    3. Use cached data: shadcn-logos cache --stats')
     
     return { code: 3, retry: true }
   }
@@ -37,7 +36,7 @@ export class EnhancedErrorHandler {
     logger.dim(`  ${error.message}`)
     
     logger.dim('\n  Recovery options:')
-    logger.highlight('    1. Re-initialize: shadcn-logos init --force')
+    logger.highlight('    1. Re-initialize: shadcn-logos init')
     logger.highlight('    2. Fix manually: edit logos.config.json')
     logger.highlight('    3. Use defaults: shadcn-logos init -y')
     

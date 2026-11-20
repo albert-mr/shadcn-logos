@@ -25,6 +25,15 @@ describe('applySvgProps', () => {
     expect(out).not.toContain('width="100"')
     expect(out.startsWith('<svg width={size} {...p}')).toBe(true)
   })
+
+  it('keeps width/height on inner elements', () => {
+    const out = applySvgProps(
+      '<svg width="100" height="100" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="3" rx="2"/></svg>',
+      'width={size}',
+    )
+    expect(out).toContain('<rect width="18" height="18"')
+    expect(out).not.toContain('width="100"')
+  })
 })
 
 describe('reactifyAttrs', () => {
@@ -34,6 +43,42 @@ describe('reactifyAttrs', () => {
     expect(out).toContain('fillRule="evenodd"')
     expect(out).toContain('strokeWidth="2"')
     expect(out).not.toContain('fill-rule=')
+  })
+
+  it('converts any hyphenated or namespaced attribute but leaves data-* and aria-*', () => {
+    const out = reactifyAttrs(
+      '<feFlood flood-opacity="0" color-interpolation-filters="sRGB" xml:space="preserve" data-name="x" aria-label="y"/>',
+    )
+    expect(out).toContain('floodOpacity="0"')
+    expect(out).toContain('colorInterpolationFilters="sRGB"')
+    expect(out).toContain('xmlSpace="preserve"')
+    expect(out).toContain('data-name="x"')
+    expect(out).toContain('aria-label="y"')
+  })
+
+  it('converts a style string to an object', () => {
+    const out = reactifyAttrs('<mask style="mask-type:luminance;fill-opacity:.5"/>')
+    expect(out).toContain('style={{ "maskType": "luminance", "fillOpacity": ".5" }}')
+    expect(out).not.toContain('style="')
+  })
+})
+
+const STYLED =
+  '<svg viewBox="0 0 24 24"><mask id="m" style="mask-type:luminance"><path d="M0 0h24v24H0z" fill="#fff"/></mask><path mask="url(#m)" d="M2 2h20v20H2z"/></svg>'
+
+describe('generateComponent — style attribute', () => {
+  it('Vue keeps the string style', () => {
+    expect(generateComponent(cfg({ framework: 'vue' }), logo, STYLED)).toContain('style="mask-type:luminance"')
+  })
+
+  it('Svelte keeps the string style', () => {
+    expect(generateComponent(cfg({ framework: 'svelte' }), logo, STYLED)).toContain('style="mask-type:luminance"')
+  })
+
+  it('React emits a style object, never a string style', () => {
+    const out = generateComponent(cfg(), logo, STYLED)
+    expect(out).not.toContain('style="')
+    expect(out).toContain('style={{')
   })
 })
 

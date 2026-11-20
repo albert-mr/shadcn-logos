@@ -60,7 +60,7 @@ What to write for each logo:
 ### `style.defaultSize`
 
 The default value of the `size` prop, in pixels, as a string (for example `"24"`). Callers
-can always override it per usage: `<VercelLogo size={48} />`.
+can always override it per usage: `<VercelLogo size={48} />`. It must be a plain number such as "24" or "1.5"; units like "24px" are rejected.
 
 ### `style.colorMode`
 
