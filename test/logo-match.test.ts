@@ -30,6 +30,14 @@ describe('findLogosInList', () => {
     expect(r.found.map((l) => l.title)).toEqual(['React', 'Vue'])
     expect(r.notFound).toEqual(['nope'])
   })
+  it('reports no approximate match for exact or normalized names', () => {
+    expect(findLogosInList(list, ['next.js', 'nextjs']).approximate).toEqual([])
+  })
+  it('reports a substring match as approximate', () => {
+    const r = findLogosInList([...list, L('Vercel')], ['verc'])
+    expect(r.found.map((l) => l.title)).toEqual(['Vercel'])
+    expect(r.approximate).toEqual([{ name: 'verc', title: 'Vercel' }])
+  })
 })
 
 describe('resolveVariant', () => {

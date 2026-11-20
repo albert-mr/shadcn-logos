@@ -1,0 +1,68 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  publish:
+    name: Test & publish to npm
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the GitHub release
+      id-token: write # npm trusted publishing (OIDC)
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          registry-url: https://registry.npmjs.org
+
+      - run: bun install --frozen-lockfile
+
+      - name: Check tag matches package.json version
+        env:
+          TAG: ${{ github.ref_name }}
+        run: |
+          version="v$(node -p "require('./package.json').version")"
+          if [ "$TAG" != "$version" ]; then
+            echo "::error::Tag $TAG does not match package.json version $version"
+            exit 1
+          fi
+
+      - run: bun run check
+
+      # Run the bundle the way users do: plain node, no tsx.
+      - name: Smoke-test built CLI
+        run: |
+          node dist/index.js --help
+          node dist/index.js --version
+
+      # Install the packed tarball like a user would; catches files missing from the package.
+      - name: Smoke-test packed tarball
+        run: |
+          tarball="$(npm pack --silent --pack-destination "$RUNNER_TEMP")"
+          app="$RUNNER_TEMP/app"
+          mkdir -p "$app"
+          npm install --prefix "$app" --no-audit --no-fund "$RUNNER_TEMP/$tarball"
+          "$app/node_modules/.bin/shadcn-logos" --version
+          test -f "$app/node_modules/shadcn-logos/logos/shadcn-logos.svg"
+
+      # Trusted publishing (OIDC): no token. Needs npm >= 11.5.1 and the trusted
+      # publisher configured for this workflow on npmjs.com (see PUBLISHING.md).
+      - name: Publish to npm
+        run: |
+          npm install -g npm@latest
+          npm publish --access public
+
+      - name: Create GitHub release
+        run: gh release create "$GITHUB_REF_NAME" --generate-notes
+        env:
+          GH_TOKEN: ${{ github.token }}

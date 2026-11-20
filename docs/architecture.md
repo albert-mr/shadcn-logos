@@ -59,7 +59,7 @@ These are mostly pure functions, which is what makes them easy to unit-test.
 
 | File | Responsibility |
 | --- | --- |
-| `src/types/index.ts` | Zod schemas (`Logo`, `Category`, `Config`, ...) and the inferred TypeScript types, plus typed error classes. |
+| `src/types/index.ts` | Zod schemas (`Logo`, `Category`, `Config`, ...) and the inferred TypeScript types, plus the `ConfigurationError` class. |
 | `data/logos.ts` | The bundled local logo definitions and helpers. |
 | `logos/*.svg` | The bundled local SVG files. |
 
@@ -86,8 +86,9 @@ versioned and expire after one hour. Manage it with `shadcn-logos cache --stats`
 
 [tsup](https://tsup.egoist.dev) bundles `src/cli/index.ts` into a single minified ESM file
 at `dist/index.js`, with a `#!/usr/bin/env node` banner so it runs as a binary. The
-`shadcn-logos` bin in `package.json` points at it. The published package also ships the
-`data/` and `logos/` directories so the bundled local logos resolve at runtime.
+`shadcn-logos` bin in `package.json` points at it. `data/logos.ts` is bundled into
+`dist/`, so the published package only needs to ship the `logos/` directory (the SVG files)
+for the local logos to resolve at runtime.
 
 ## Where things come from
 

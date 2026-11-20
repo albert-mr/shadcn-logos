@@ -11,11 +11,22 @@ permissions:
 
 jobs:
   check:
-    name: Lint, test & build (Node ${{ matrix.node }})
-    runs-on: ubuntu-latest
+    name: Lint, test & build (${{ matrix.os }}, Node ${{ matrix.node }})
+    runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
+        os: [ubuntu-latest]
         node: [20, 24]
+        include:
+          - os: macos-latest
+            node: 24
+          - os: windows-latest
+            node: 24
+    defaults:
+      run:
+        # Same shell everywhere (Git Bash on Windows), and fail on any failing line.
+        shell: bash
 
     steps:
       - uses: actions/checkout@v7
@@ -35,3 +46,41 @@ jobs:
         run: |
           node dist/index.js --help
           node dist/index.js --version
+
+  package:
+    name: Packed tarball smoke test
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: oven-sh/setup-bun@v2
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+
+      - run: bun install --frozen-lockfile
+
+      - run: bun run build
+
+      # Install the packed tarball like a user would; catches files missing from the package.
+      - name: Smoke-test packed tarball
+        run: |
+          tarball="$(npm pack --silent --pack-destination "$RUNNER_TEMP")"
+          app="$RUNNER_TEMP/app"
+          mkdir -p "$app"
+          npm install --prefix "$app" --no-audit --no-fund "$RUNNER_TEMP/$tarball"
+          "$app/node_modules/.bin/shadcn-logos" --version
+          test -f "$app/node_modules/shadcn-logos/logos/shadcn-logos.svg"
+
+      # Add the bundled logo from the installed package. The app has no framework
+      # deps, so it is detected as "raw" and writes SVGs to ./assets/logos.
+      # Name lookup still fetches the catalog from api.svgl.app, so this needs
+      # network; don't fail CI when svgl is down.
+      - name: Smoke-test installed add command
+        continue-on-error: true
+        working-directory: ${{ runner.temp }}/app
+        run: |
+          ./node_modules/.bin/shadcn-logos add shadcn-logos
+          test -f assets/logos/shadcn-logos.svg

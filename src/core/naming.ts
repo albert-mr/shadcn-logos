@@ -5,13 +5,19 @@
  * consistent everywhere a name is shown or written.
  */
 
+/** Symbols that distinguish brands ("C" vs "C++" vs "C#") become words so the
+ *  names stay distinct after non-alphanumerics are dropped. */
+const spellSymbols = (title: string): string =>
+  title.replace(/\+/g, ' Plus ').replace(/#/g, ' Sharp ').replace(/&/g, ' And ')
+
 /** Turn a logo title into a safe, lowercase, hyphenated file basename. */
 export function sanitizeFileName(title: string): string {
-  return title
+  const name = spellSymbols(title)
     .toLowerCase()
     .replace(/[^a-z0-9]/g, '-')
     .replace(/-+/g, '-')
     .replace(/^-|-$/g, '')
+  return name || 'logo'
 }
 
 /**
@@ -22,7 +28,7 @@ export function sanitizeFileName(title: string): string {
  * the result never starts with a number.
  */
 export function toComponentName(title: string): string {
-  const pascal = title
+  const pascal = spellSymbols(title)
     .split(/[^a-zA-Z0-9]/)
     .filter(Boolean)
     // Capitalize each word's first letter but preserve the rest so brand casing

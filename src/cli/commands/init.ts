@@ -95,13 +95,9 @@ export async function initCommand(options: InitOptions) {
         name: 'defaultSize',
         message: 'Default logo size (in pixels)?',
         default: '24',
-        validate: (input: string) => {
-          const num = parseInt(input)
-          if (isNaN(num) || num <= 0) {
-            return 'Please enter a valid positive number'
-          }
-          return true
-        }
+        // No trim: the value is saved as typed and must match the config schema exactly.
+        validate: (input: string) =>
+          /^\d+(\.\d+)?$/.test(input) && Number(input) > 0 ? true : 'Please enter a positive number, for example 24'
       },
       {
         type: 'list',

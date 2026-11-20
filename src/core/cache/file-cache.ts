@@ -17,12 +17,11 @@ interface CacheStats {
 }
 
 export class FileCache {
-  private cacheDir: string
   private readonly version = '1.0.0'
 
-  constructor() {
-    this.cacheDir = join(homedir(), '.shadcn-logos', 'cache')
-    this.ensureCacheDir()
+  /** Resolved on each use so `SHADCN_LOGOS_CACHE_DIR` can redirect it (tests, sandboxes). */
+  private get cacheDir(): string {
+    return process.env.SHADCN_LOGOS_CACHE_DIR ?? join(homedir(), '.shadcn-logos', 'cache')
   }
 
   private ensureCacheDir(): void {
@@ -58,8 +57,6 @@ export class FileCache {
   }
 
   async set<T>(key: string, data: T, ttl = 3600000): Promise<void> { // 1 hour default
-    this.ensureCacheDir()
-    
     const cachePath = join(this.cacheDir, `${this.sanitizeKey(key)}.json`)
     const entry: CacheEntry<T> = {
       data,
@@ -67,8 +64,9 @@ export class FileCache {
       ttl,
       version: this.version
     }
-    
+
     try {
+      this.ensureCacheDir()
       writeFileSync(cachePath, JSON.stringify(entry))
     } catch (error) {
       console.warn('Failed to write to cache:', error)
@@ -109,13 +107,19 @@ export class FileCache {
       if (!existsSync(this.cacheDir)) return stats
 
       const files = readdirSync(this.cacheDir).filter(f => f.endsWith('.json'))
-      stats.entries = files.length
 
       for (const file of files) {
         const filePath = join(this.cacheDir, file)
-        const content = readFileSync(filePath, 'utf8')
-        const entry: CacheEntry<any> = JSON.parse(content)
-        
+        let content: string
+        let entry: CacheEntry<any>
+        try {
+          content = readFileSync(filePath, 'utf8')
+          entry = JSON.parse(content)
+        } catch {
+          continue // skip a corrupt or unreadable entry
+        }
+
+        stats.entries++
         stats.totalSize += content.length
         stats.oldestEntry = Math.min(stats.oldestEntry, entry.timestamp)
         stats.newestEntry = Math.max(stats.newestEntry, entry.timestamp)

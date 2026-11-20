@@ -1,4 +1,5 @@
 import ora from 'ora'
+import { existsSync } from 'fs'
 import { logger } from '../utils/logger.js'
 import { loadConfig } from '../utils/config.js'
 import { LogoInstaller } from '../../core/installer.js'
@@ -46,13 +47,30 @@ export async function addCommand(logos: string[], options: Partial<InstallOption
   }).start()
 
   try {
-    const installed = await installer.install(installOptions)
+    const installed = await installer.install(installOptions, (done, total, title) => {
+      spinner.text = `Installing logos... ${done}/${total} (${title})`
+    })
+
+    spinner.succeed(
+      installOptions.dryRun
+        ? 'Dry run completed successfully'
+        : `Successfully installed ${installed.length} logo${installed.length === 1 ? '' : 's'}`
+    )
+
+    if (!installOptions.silent) {
+      for (const { name, title } of installer.lastApproximate) {
+        logger.warn(`"${name}" matched "${title}"`)
+      }
+    }
 
     if (installOptions.dryRun) {
-      spinner.succeed('Dry run completed successfully')
+      for (const logo of installed) {
+        for (const path of installer.targetPaths(logo)) {
+          const clash = existsSync(path) && !installOptions.force
+          logger.dim(`  ${logo.title} → ${path}${clash ? '  (exists, needs --force)' : ''}`)
+        }
+      }
     } else {
-      spinner.succeed(`Successfully installed ${installed.length} logo${installed.length === 1 ? '' : 's'}`)
-
       if (!installOptions.silent) {
         logger.info('Installed logos:')
         for (const logo of installed) {
@@ -65,9 +83,12 @@ export async function addCommand(logos: string[], options: Partial<InstallOption
           if (config.format !== 'svg' && (config.framework === 'react' || config.framework === 'vue' || config.framework === 'svelte')) {
             const name = toComponentName(first.title)
             const file = sanitizeFileName(first.title)
-            logger.highlight(`  import { ${name} } from '${config.outputDir}/${file}'`)
             if (config.framework === 'react') {
+              logger.highlight(`  import { ${name} } from '${config.outputDir}/${file}'`)
               logger.highlight(`  <${name} size={32} />`)
+            } else {
+              // Vue and Svelte components have a default export and need their extension.
+              logger.highlight(`  import ${name} from '${config.outputDir}/${file}.${config.framework}'`)
             }
           } else {
             logger.highlight(`  Check your logos in: ${config.outputDir}`)

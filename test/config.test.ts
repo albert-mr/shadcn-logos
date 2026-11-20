@@ -48,6 +48,11 @@ describe('config load/save', () => {
     fs.writeFileSync(getConfigPath(dir), '{ not json')
     expect(() => loadConfig(dir)).toThrow(/JSON/i)
   })
+  it('requires style.defaultSize to be a plain number', () => {
+    const withSize = (defaultSize: string) => ({ ...DEFAULT_CONFIG, style: { ...DEFAULT_CONFIG.style, defaultSize } })
+    expect(isValidConfig(withSize('24px'))).toBe(false)
+    expect(isValidConfig(withSize('1.5'))).toBe(true)
+  })
   it('rejects a structurally invalid config', () => {
     fs.writeFileSync(getConfigPath(dir), JSON.stringify({ framework: 'angular' }))
     expect(() => loadConfig(dir)).toThrow(/Invalid configuration/i)

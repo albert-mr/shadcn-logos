@@ -22,7 +22,7 @@ What actually happened instead.
 
 ## Environment
 - **OS**: [e.g. macOS 14.0, Ubuntu 22.04, Windows 11]
-- **Node.js version**: [e.g. 18.17.0]
+- **Node.js version**: [e.g. 20.18.0]
 - **Bun version**: [e.g. 1.0.0]
 - **shadcn-logos version**: [e.g. 0.1.0]
 

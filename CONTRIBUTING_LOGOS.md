@@ -71,7 +71,7 @@ Here's a complete example of adding a logo for "Acme Corp":
 
 **3. Test locally:**
 ```bash
-bunx shadcn-logos@latest add acme-corp
+bun run dev add acme-corp
 ```
 
 ## Guidelines
@@ -95,7 +95,7 @@ Use tools like:
 1. Fork the repository
 2. Create a feature branch (`git checkout -b add-acme-logo`)
 3. Add your logo files and data
-4. Test the logo works: `bunx shadcn-logos@latest add your-logo`
+4. Test the logo works: `bun run dev add your-logo`
 5. Commit your changes
 6. Open a pull request
 

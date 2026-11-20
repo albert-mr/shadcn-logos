@@ -1,6 +1,6 @@
 {
   "name": "shadcn-logos",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Copy brand logo components into your project, like shadcn/ui but for logos. React, Vue, Svelte, and optimized SVG.",
   "keywords": [
     "cli",
@@ -36,10 +36,8 @@
   "bin": {
     "shadcn-logos": "./dist/index.js"
   },
-  "main": "./dist/index.js",
   "files": [
     "dist/**/*",
-    "data/**/*",
     "logos/**/*",
     "README.md",
     "LICENSE"
@@ -55,12 +53,9 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "bun run lint && bun run type-check && bun run test && bun run build",
-    "prepublishOnly": "npm run build",
-    "postpublish": "echo '🎉 Successfully published shadcn-logos!'",
-    "release": "npm version patch && npm publish"
+    "prepublishOnly": "bun run check"
   },
   "dependencies": {
-    "cli-progress": "^3.12.0",
     "commander": "^15.0.0",
     "inquirer": "^14.2.2",
     "ora": "^9.4.1",
@@ -70,7 +65,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/cli-progress": "^3.11.6",
     "@types/node": "22",
     "@typescript-eslint/eslint-plugin": "^8.70.1",
     "@typescript-eslint/parser": "^8.70.1",

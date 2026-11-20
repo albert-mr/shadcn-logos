@@ -53,3 +53,8 @@ logos.config.json
 
 # Generated components for testing
 src/components/logos/
+
+# Local agent skills (not shipped)
+.claude/skills/
+.agents/
+skills-lock.json

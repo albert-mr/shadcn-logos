@@ -1,65 +1,33 @@
-# Publishing Guide for shadcn-logos
+# Publishing shadcn-logos
 
-## NPM Publishing Instructions
+Releases are published by GitHub Actions (`.github/workflows/release.yml`) when a `v*` tag is pushed.
 
-### First-Time Setup
-1. Create an NPM account at https://www.npmjs.com
-2. Login to NPM:
+## One-time setup
+
+Publishing uses npm [trusted publishing](https://docs.npmjs.com/trusted-publishers), so there is no token to store. On npmjs.com open the `shadcn-logos` package → Settings → Trusted Publisher → GitHub Actions and enter:
+
+- Organization or user: `albert-mr`
+- Repository: `shadcn-logos`
+- Workflow filename: `release.yml`
+
+## Releasing
+
+1. Bump `version` in `package.json` ([semver](https://semver.org/)).
+2. In `CHANGELOG.md`, move the `[Unreleased]` entries under a new `[X.Y.Z]` heading.
+3. Open a PR and merge it to `main`.
+4. Tag the merge commit on `main` and push the tag:
    ```bash
-   npm login
+   git tag vX.Y.Z && git push origin vX.Y.Z
    ```
 
-### Publishing Process
-1. **Build the project:**
-   ```bash
-   bun run build
-   ```
+The workflow checks that the tag matches `package.json`, runs `bun run check` (lint, type-check, tests, build), smoke-tests the CLI and the packed tarball, publishes to npm with provenance, and creates the GitHub release.
 
-2. **Test locally:**
-   ```bash
-   npm link
-   shadcn-logos --help
-   ```
+## Manual fallback
 
-3. **Publish to NPM:**
-   ```bash
-   npm publish
-   ```
-   
-   Or use the release script:
-   ```bash
-   npm run release
-   ```
+If the workflow can't be used, publish from a clean, up-to-date `main`:
 
-### Version Management
-- **Patch release** (bug fixes): `npm version patch`
-- **Minor release** (new features): `npm version minor`
-- **Major release** (breaking changes): `npm version major`
+```bash
+bun run check && npm publish
+```
 
-### Pre-publishing Checklist
-- [ ] All tests pass
-- [ ] Build completes successfully
-- [ ] README is up to date
-- [ ] CHANGELOG is updated
-- [ ] Version bumped appropriately
-- [ ] Git repository is clean
-
-### Post-publishing
-1. Create a GitHub release with the same version tag
-2. Announce on social media/communities
-3. Update documentation if needed
-
-## Maintenance
-
-### Regular Updates
-- Keep dependencies updated
-- Monitor security vulnerabilities
-- Respond to issues and PRs
-- Update SVGL API integration as needed
-
-### Semantic Versioning
-Follow [Semantic Versioning](https://semver.org/):
-- MAJOR.MINOR.PATCH
-- Breaking changes require major version bump
-- New features require minor version bump
-- Bug fixes require patch version bump
+`prepublishOnly` also runs `bun run check`, so `npm publish` refuses to ship a build that fails lint, types or tests.

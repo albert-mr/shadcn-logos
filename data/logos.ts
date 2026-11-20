@@ -46,13 +46,6 @@ export function getLocalLogos(): LocalLogo[] {
 }
 
 /**
- * Get local logo by ID
- */
-export function getLocalLogoById(id: string): LocalLogo | undefined {
-  return localLogos.find(logo => logo.id === id)
-}
-
-/**
  * Search local logos
  */
 export function searchLocalLogos(query: string): LocalLogo[] {

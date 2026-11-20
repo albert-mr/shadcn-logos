@@ -34,21 +34,30 @@ export function filterByCategory(allLogos: Logo[], category: string): Logo[] {
   return allLogos.filter((l) => [l.category].flat().some((c) => c.toLowerCase() === want))
 }
 
-/** Resolve many names, partitioning into found logos and not-found names. */
+/**
+ * Resolve many names, partitioning into found logos and not-found names.
+ * `approximate` lists names that only matched a title as a substring.
+ */
 export function findLogosInList(
   allLogos: Logo[],
   names: string[],
-): { found: Logo[]; notFound: string[] } {
+): { found: Logo[]; notFound: string[]; approximate: Array<{ name: string; title: string }> } {
   const found: Logo[] = []
   const notFound: string[] = []
+  const approximate: Array<{ name: string; title: string }> = []
 
   for (const name of names) {
     const logo = matchLogo(allLogos, name)
-    if (logo) found.push(logo)
-    else notFound.push(name)
+    if (!logo) {
+      notFound.push(name)
+      continue
+    }
+    found.push(logo)
+    // Neither the exact nor the normalized tier matched: it came from the substring tier.
+    if (normalize(logo.title) !== normalize(name)) approximate.push({ name, title: logo.title })
   }
 
-  return { found, notFound }
+  return { found, notFound, approximate }
 }
 
 /**
